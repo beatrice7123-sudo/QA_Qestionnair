@@ -1,0 +1,456 @@
+<div style="position: fixed;pointer-events: none;inset: 0;
+            min-height: 100%;width: 100%;background-color: #4c4c4ce1;
+            font-size: 20px; z-index: -1;"></div>
+<div style="width:100vw;height:100vh;top:0;left: 0;
+            display: grid;place-items: center;font-size: 20px;">
+  <div style="display: flex; flex-direction: column;
+              justify-content: flex-start; align-items: center; width:1000px;
+              height: 690px; border: none; ">
+    <div style="background-color: #ffeec1;
+                width: 1000px; height: 250px; border-radius: 15px;
+                display: flex; flex-direction: column;
+                justify-content: center; align-items: center;">
+      <div style="display: flex;flex-direction: column;align-items: baseline;margin-top: 40px;">
+        <label>
+          問卷名稱： <input (keyup)="letterSearch()" [(ngModel)]="searchData"
+                      style="width:555px;height:25px;background-color: #fff8e4;
+                              border:none;border-radius: 5px;"></label>
+        <label style="margin:13px;">
+          問卷時間：<input type="date" style="width:200px;height:25px;border-radius: 5px;
+                                              margin:0px 10px;text-align: center;font-size: 18px;
+                                              background-color: #fff8e4;border:none; color: #ffca61;"
+                            [(ngModel)]="searchBegin">
+          ~ <input type="date" style="width:200px;height:25px;border-radius: 5px;
+                                      margin:0px 10px;text-align: center;font-size: 18px;
+                                      background-color: #fff8e4;border:none; color: #ffca61;"
+                    [(ngModel)]="searchEnd">
+          <button (click)="QuestionnaireDateSearch()" class="searchBtn"
+                  style="background-color: #fff8e4; border:1px solid;
+                          width:80px;border-radius: 7px;font-size: 15px;margin-top: 13px;
+                          font-family: 'LXGW WenKai TC', monospace;">開始搜尋</button>
+        </label>
+      </div>
+      <div>
+        @for(btn of buttons;track $index;let i = $index){
+          <button class="searchBtn" (click)="selectButton(i)"
+                  [class.active]="selectedBtnIndex === i">
+            {{ btn.label }}
+          </button>
+        }
+      </div>
+      <!-- <div>
+        <button (click)="All()" class="searchBtn"
+                style="background-color: #fff8e4; border:1px solid; margin: 10px 20px;
+                      width:100px;border-radius: 20px;font-size: 14px;">全部</button>
+        <button (click)="ING()" class="searchBtn"
+                style="background-color: #fff8e4; border:1px solid; margin: 10px 20px;
+                      width:100px;border-radius: 20px;font-size: 14px;">進行中</button>
+        <button (click)="notYet()" class="searchBtn"
+                style="background-color: #fff8e4; border:1px solid; margin: 10px 20px;
+                      width:100px;border-radius: 20px;font-size: 14px;">未開始</button>
+        <button (click)="finish()" class="searchBtn"
+                style="background-color: #fff8e4; border:1px solid; margin: 10px 20px;
+                      width:100px;border-radius: 20px;font-size: 14px;">已結束</button>
+      </div> -->
+    </div>
+
+    <div style="border: none;border-radius: 15px;
+                width: 1000px;height: fit-content;">
+      <label style="display: flex;flex-direction: row;color: #fff8e4;">
+        <div style="font-size: 50px;margin:0px 10px;" (click)="goToTrashcan()">🗑</div>
+        <div style="font-size: 50px;margin:0px 10px;" (click)="openDialog()">+</div>
+      </label>
+
+      <dialog #myDialog>
+        <div (click)="closeDialog()" style="justify-self:flex-end;margin-right:20px;cursor: pointer;">✕</div>
+        <div class="tabs">
+          <button class="tab-btn" [class.active]="activeTab==='tab1'" (click)="activeTab='tab1'">問卷</button>
+          <button class="tab-btn" [class.active]="activeTab==='tab2'" (click)="activeTab='tab2'">題目</button>
+        </div>
+
+        @if (activeTab === 'tab1') {
+          <div style="flex: 1;overflow-y: auto;display: flex;flex-direction: column;justify-content: center;align-items: center;">
+            <label style="margin:20px 0px;">問卷名稱：
+              <input style="width:500px;border-radius: 5px;" [(ngModel)]="title"></label>
+            <label style="margin:20px 0px;">問卷說明：
+              <textarea style="width:500px;border-radius: 5px;" [(ngModel)]="description"></textarea></label>
+            <label style="margin:13px;">
+              問卷時間：<input type="date"
+                    style="width:225px;height:25px;border-radius:5px;margin:0 10px;
+                            text-align:center;font-size:18px;background-color:#ffffff;
+                            border:none;color:#ffca61;"
+                    [(ngModel)]="startDate">
+                ~<input type="date"
+                    style="width:225px;height:25px;border-radius:5px;margin:0 10px;
+                            text-align:center;font-size:18px;background-color:#ffffff;
+                            border:none;color:#ffca61;"
+                    [(ngModel)]="endDate">
+            </label>
+            <div style="width:500px;display: flex;justify-content: space-between;
+                        margin-top:100px;">
+              <button class="dialogBtn"  (click)="cancel()">取消</button>
+              <button class="dialogBtn" (click)="saveQuestion()">確定</button>
+            </div>
+          </div>
+
+        } @else if (activeTab === 'tab2') {
+          <div style="margin-top: 10px;">
+            <!-- ---------------------------------------------------------------------------- -->
+            @if(questionList.length==0){
+              <div #editArea class="edit-section">
+                <h3 style="width:500px;margin:10px;">新增題目</h3>
+                <div style="width:500px;display: flex;flex-direction: column;justify-content: center;align-items: first baseline;">
+                  <div>
+                    題目內容：
+                    <input type="text" [(ngModel)]="question"
+                            style="width:350px;border-radius: 5px;height:30px;font-size: 15px;">
+                  </div>
+                  <label style="margin: 10px;">
+                    <span style="margin-right:24px;margin-left: 24px;">類型：</span>
+                    <select [(ngModel)]="type"
+                            style="width:200px;height:30px;border:none;border-radius: 10px;
+                                    text-align: center;font-size: 15px;">
+                      <option value="single">單選</option>
+                      <option value="multiple">多選</option>
+                      <option value="text">簡答</option>
+                    </select>
+                  </label>
+                  <div style="display: flex;flex-direction: row;">
+                    <p style="margin-right:24px;margin-left: 24px;margin-top:0px;">選項：</p>
+                    <div style="display: flex;flex-direction: column;">
+                      @for(opt of options;track $index;let i =$index){   <!--i 為每個項目的索引-->
+                        <label style="margin: 5px;">
+                          <input #optionInputs type="text"
+                                  [(ngModel)]="options[i]"
+                                  placeholder="請輸入選項內容"
+                                  style="width:200px;height:20px;border-radius: 10px;
+                                          text-align: center;font-size: 15px;">
+                          <span (click)="removeOption(i)" style="justify-self:flex-end;margin-left:20px;">✕</span>
+                        </label>
+                      }
+                      @if(type=="single" || type=="multiple"){
+                        <button (click)="addOption()" class="dialogBtn"
+                                style="width:215px;height:30px;border-radius: 20px;margin:5px;
+                                      font-size: 20px;background-color: #fff8e4;text-align: center;">+</button>
+                      }
+                    </div>
+
+                  </div>
+                </div>
+                <div style="justify-content: center; margin-top: 20px;">
+                  <div style="margin-top:10px;width:400px;display: flex;flex-direction: row;justify-content: space-between;">
+                    <button (click)="cancelEdit()"  class="dialogBtn" style="background-color: #fff8e4;">取消</button>
+                    <button (click)="save()" class="dialogBtn" style="background-color: #fff8e4;">儲存</button>
+                  </div>
+                </div>
+
+              </div>
+            <!-- ---------------------------------------------------------------------------- -->
+            }@else {
+              <label style="display: flex;flex-direction: row;justify-content: space-between;">
+                <div style="font-size: 40px;margin:0px 10px;" (click)="goToTrashcan()">🗑</div>
+                <div style="font-size: 40px;margin:0px 10px;" (click)="addQuestion()">+</div>
+              </label>
+              <table style="width:100%; border-spacing: 0px;overflow: hidden;
+                        border-style: none; border-radius: 10px;">
+                <thead style="background-color: #fff8e4; text-align: center;">
+                  <tr>
+                    <th style="padding: 8px;"></th>
+                    <th style="padding: 8px;">內容</th>
+                    <th style="padding: 8px;">種類</th>
+                    <th style="padding: 8px;">必填/選填</th>
+                    <th style="padding: 8px;">編輯</th>
+                  </tr>
+                </thead>
+                <tbody style="text-align: center;background-color: #ffeec1">
+                  @for(eachQ of questionList;track $index){
+                    <tr>
+                      <input type="checkbox" [checked]="deleteQ.includes(eachQ.questionID)"
+                      (change)="questionDelete(eachQ.questionID, eachQ, $event)">
+                      <td style="width:250px;">{{eachQ.question}}</td>
+                      @if(eachQ.type=="single"){
+                        <td>單選</td>
+                      }@else if(eachQ.type=="multiple"){
+                        <td>多選</td>
+                      }@else{
+                        <td>簡答</td>
+                      }
+
+                      <td><input type="checkbox"
+                                [(ngModel)]="eachQ.required"
+                                (change)="onRequiredChange(eachQ)"></td>
+                      <td (click)="edit(eachQ.questionID)" style="cursor: pointer;">編輯</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+          @if(questionList.length!=0){
+            <div style="width:640px;display: flex;justify-content: end;
+                        margin-top:50px;">
+              <button (click)="goPreview()" class="dialogBtn">預覽</button>
+            </div>
+          }
+          @if(isNewMode()){
+            <div #editArea class="edit-section">
+              <h3 style="width:500px;margin:10px;">新增題目</h3>
+              <div style="width:500px;display: flex;flex-direction: column;justify-content: center;align-items: first baseline;">
+                <div>
+                  題目內容：
+                  <input type="text" [(ngModel)]="question"
+                          style="width:350px;border-radius: 5px;height:30px;font-size: 15px;">
+                </div>
+                <label style="margin: 10px;">
+                  <span style="margin-right:24px;margin-left: 24px;">類型：</span>
+                  <select [(ngModel)]="type"
+                          style="width:200px;height:30px;border:none;border-radius: 10px;
+                                  text-align: center;font-size: 15px;">
+                    <option value="single">單選</option>
+                    <option value="multiple">多選</option>
+                    <option value="text">簡答</option>
+                  </select>
+                </label>
+                <div style="display: flex;flex-direction: row;">
+                  <p style="margin-right:24px;margin-left: 24px;margin-top:0px;">選項：</p>
+                  <div style="display: flex;flex-direction: column;">
+                    @for(opt of options;track $index;let i =$index){   <!--i 為每個項目的索引-->
+                      <label style="margin: 5px;">
+                        <input #optionInputs type="text"
+                                [(ngModel)]="options[i]"
+                                placeholder="請輸入選項內容"
+                                style="width:200px;height:20px;border-radius: 10px;
+                                        text-align: center;font-size: 15px;">
+                        <span (click)="removeOption(i)" style="justify-self:flex-end;margin-left:20px;">✕</span>
+                      </label>
+                    }
+                    @if(type=="single" || type=="multiple"){
+                      <button (click)="addOption()" class="dialogBtn"
+                              style="width:215px;height:30px;border-radius: 20px;margin:5px;
+                                    font-size: 20px;background-color: #fff8e4;text-align: center;">+</button>
+                    }
+                  </div>
+
+                </div>
+              </div>
+              <div style="justify-content: center; margin-top: 20px;">
+                <div style="margin-top:10px;width:400px;display: flex;flex-direction: row;justify-content: space-between;">
+                  <button (click)="cancelEdit()"  class="dialogBtn" style="background-color: #fff8e4;">取消</button>
+                  <button (click)="save()" class="dialogBtn" style="background-color: #fff8e4;">儲存</button>
+                </div>
+              </div>
+
+            </div>
+          }
+            <!-- ---------------------------------------------------------------------------- -->
+          @if(isEditMode()){
+            <div #editArea class="edit-section">
+              <h3 style="width:500px;margin:10px;">編輯題目</h3>
+              <div style="width:500px;display: flex;flex-direction: column;justify-content: center;align-items: first baseline;">
+                <div>
+                  題目內容：
+                  <input type="text" [(ngModel)]="editingQuestion.question"
+                          style="width:350px;border-radius: 5px;height:30px;font-size: 15px;">
+                </div>
+                <label style="margin: 10px;">
+                  <span style="margin-right:24px;margin-left: 24px;">類型：</span>
+                  <select [(ngModel)]="editingQuestion.type"
+                          style="width:200px;height:30px;border:none;border-radius: 10px;
+                                  text-align: center;font-size: 15px;">
+                    <option value="single">單選</option>
+                    <option value="multiple">多選</option>
+                    <option value="text">簡答</option>
+                  </select>
+                </label>
+                <div style="display: flex;flex-direction: row;">
+                  <p style="margin-right:24px;margin-left: 24px;margin-top:0px;">選項：</p>
+                  <div style="display: flex;flex-direction: column;">
+                    @for(opt of editingQuestion.options;track $index;let i =$index){   <!--i 為每個項目的索引-->
+                      <label style="margin: 5px;">
+                        <input #optionInputs type="text"
+                                [(ngModel)]="editingQuestion.options[i]"
+                                placeholder="請輸入選項內容"
+                                style="width:200px;height:20px;border-radius: 10px;
+                                        text-align: center;font-size: 15px;">
+                        <span (click)="removeOption(i)" style="justify-self:flex-end;margin-left:20px;">✕</span>
+                      </label>
+                    }
+                    @if(editingQuestion.type=="single" || editingQuestion.type=="multiple"){
+                      <button (click)="addMoreOption()" class="dialogBtn"
+                              style="width:215px;height:30px;border-radius: 20px;margin:5px;
+                                     font-size: 20px;background-color: #fff8e4;text-align: center;">+</button>
+                    }
+                  </div>
+
+                </div>
+              </div>
+              <div style="justify-content: center; margin-top: 20px;">
+                <div style="margin-top:10px;width:400px;display: flex;flex-direction: row;justify-content: space-between;">
+                  <button (click)="cancelEdit()"  class="dialogBtn" style="background-color: #fff8e4;">取消</button>
+                  <button (click)="save()" class="dialogBtn" style="background-color: #fff8e4;">儲存</button>
+                </div>
+              </div>
+
+            </div>
+          }
+          @if(previewQuestion){
+            <div #previewArea class="preview-section">
+              <p style="justify-content: center;margin-top: 50px;">{{Data.startDate}}~{{Data.endDate}}</p>
+              <h1 style="justify-content: center;">{{Data.title}}</h1>
+              <p style="margin-bottom: 30px;">{{Data.description}}</p>
+                <div style="position: static;inset: 0;background: none;
+                            border-radius: 15px;pointer-events: none;z-index: 5;">
+                  <div style="display: flex;flex-direction: column;justify-content: baseline;
+                              align-items: baseline;margin-left: 100px;">
+                    <label class="info">姓名 ：<input></label><br>
+                    <label class="info">手機 ：<input></label><br>
+                    <label class="info">Email：<input></label><br>
+                    <label class="info">年齡 ：<input></label><br>
+                  </div>
+                  <div style="display: flex; flex-direction: column;justify-content: center;
+                              align-items: center;">
+                    <ol>
+                      @for(item of Data.questionList;track $index){
+                        @if(item.required==true){
+                          <li>{{item.question}}(必填)</li>
+                        }@else{
+                          <li>{{item.question}}(選填)</li>
+                        }
+                        @if(item.type=="single"){
+                          @for(i of item.options;track $index){
+                            <input type="radio" name="{{item.questionId}}" [value]="i"
+                            class="Q">{{i}}
+                          }
+                        }@else if(item.type=="multiple"){
+                          @for(i of item.options;track $index){
+                            <input type="checkbox" class="Q">{{i}}
+                          }
+                        }@else{
+                          <textarea class="Q" style="width:300px;height:100px;"></textarea>
+                        }
+                      }
+                    </ol>
+                  </div>
+                </div>
+              <div style="width:700px;display: flex;justify-content: space-between;">
+                <button  (click)="again()" class="dialogBtn" style="margin-left:40px;background-color: #fff8e4;">再修改</button>
+                <div>
+                  <button  (click)="store()" class="dialogBtn" style="margin-left:40px;background-color: #fff8e4;">儲存，不發布</button>
+                  <button  (click)="push()" class="dialogBtn" style="margin-left:40px;background-color: #fff8e4;">儲存並發布</button>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </dialog>
+
+      <table style="width:100%; border-spacing: 0px;overflow: hidden;
+                    border-style: none; border-radius: 10px;">
+        <thead style="background-color: #fff8e4; text-align: center;">
+          <tr>
+            <th style="padding: 8px;"></th>
+            <th style="padding: 8px;">編號</th>
+            <th style="padding: 8px;">名稱</th>
+            <th style="padding: 8px;">狀態</th>
+            <th style="padding: 8px;">開始時間</th>
+            <th style="padding: 8px;">結束時間</th>
+            <!-- <th style="padding: 8px;">編輯</th> -->
+            <th style="padding: 8px;">結果</th>
+          </tr>
+        </thead>
+        <tbody style="text-align: center;background-color: #ffeec1">
+
+          @if(this.dataSource.length==0){
+            <tr>
+              <td colspan="7" style="text-align: center;">查無資料</td>  <!-- colspan:跨越 -->
+            </tr>
+          }@else {
+            @for(eachRow of dataSource;track $index){
+            <!-- cursor：滑鼠游標樣式 pointer：手指圖示 -->
+              @if(eachRow.status==2){
+                <tr style="cursor: pointer;" class="btn">
+                  <input type="checkbox" [checked]="deleteQuestionnaire.includes(eachRow.questionnaireID)"
+                  (change)="questionnaireDelete(eachRow.questionnaireID, eachRow, $event)"
+                  (click)="$event.stopPropagation()">  <!-- ✅ 阻止冒泡 -->
+                  <td style="padding: 8px;">{{eachRow.questionnaireID}}</td>
+                  <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
+                      先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
+                  <td [innerHTML]="highlight(eachRow.title)"
+                      style="width:250px;">{{eachRow.title}}</td>
+                  <td>進行中</td>
+                  <td>{{eachRow.startTime}}</td>
+                  <td>{{eachRow.endTime}}</td>
+                  <!-- 控制pointer失效 -->
+                  <!-- <td></td> -->
+                  <td (click)="goTo(eachRow.questionnaireID)" class="count" style="cursor: pointer;">查看</td>
+                </tr>
+              }@else if(eachRow.status==1){
+                <tr>
+                  <input type="checkbox" [checked]="deleteQuestionnaire.includes(eachRow.questionnaireID)"
+                  (change)="questionnaireDelete(eachRow.questionnaireID, eachRow, $event)"
+                  (click)="$event.stopPropagation()">  <!-- ✅ 阻止冒泡 -->
+                  <td style="padding: 8px;">{{eachRow.questionnaireID}}</td>
+                  <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
+                      先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
+                  <td [innerHTML]="highlight(eachRow.title)"
+                      style="width:250px;">{{eachRow.title}}</td>
+                  <td>未開始</td>
+                  <td>{{eachRow.startTime}}</td>
+                  <td>{{eachRow.endTime}}</td>
+                  <!-- 控制pointer失效 -->
+                  <!-- <td style="pointer-events: none;"></td> -->
+                  <td>未開始</td>
+                </tr>
+              }@else if(eachRow.status==4){
+                <tr>
+                  <input type="checkbox" [checked]="deleteQuestionnaire.includes(eachRow.questionnaireID)"
+                  (change)="questionnaireDelete(eachRow.questionnaireID, eachRow, $event)"
+                  (click)="$event.stopPropagation()">  <!-- ✅ 阻止冒泡 -->
+                  <td style="padding: 8px;">{{eachRow.questionnaireID}}</td>
+                  <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
+                      先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
+                  <td [innerHTML]="highlight(eachRow.title)"
+                      style="width:250px;">{{eachRow.title}}</td>
+                  <td>未發布</td>
+                  <td>{{eachRow.startTime}}</td>
+                  <td>{{eachRow.endTime}}</td>
+                  <!-- 控制pointer失效 -->
+                  <!-- <td style="pointer-events: none;"></td> -->
+                  <td>---</td>
+                </tr>
+              }@else {
+                <tr class="btn">
+                  <input type="checkbox" [checked]="deleteQuestionnaire.includes(eachRow.questionnaireID)"
+                  (change)="questionnaireDelete(eachRow.questionnaireID, eachRow, $event)"
+                  (click)="$event.stopPropagation()">  <!-- ✅ 阻止冒泡 -->
+                  <td style="padding: 8px;">{{eachRow.questionnaireID}}</td>
+                  <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
+                      先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
+                  <td [innerHTML]="highlight(eachRow.title)"
+                      style="width:250px;">{{eachRow.title}}</td>
+                  <td>已結束</td>
+                  <td>{{eachRow.startTime}}</td>
+                  <td>{{eachRow.endTime}}</td>
+                  <!-- 控制pointer失效 -->
+                  <!-- <td style="pointer-events: none;"></td> -->
+                  <td (click)="goTo(eachRow.questionnaireID)" class="count" style="cursor: pointer;">查看</td>
+                </tr>
+              }
+            }
+          }
+        </tbody>
+      </table>
+
+      @if(this.dataLength>5){
+        <div class="paginator">
+          <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">← 上一頁</button>
+          <span style="color: #fff8e4;">{{ currentPage }} / {{ totalPages }}</span>
+          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">下一頁 →</button>
+        </div>
+      }
+
+    </div>
+  </div>
+
+</div>
+

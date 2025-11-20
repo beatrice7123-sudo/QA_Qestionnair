@@ -1,0 +1,79 @@
+
+// input type="date"樣式
+::-webkit-calendar-picker-indicator {
+    filter: invert(1)           // 顏色反轉  黑 → 白、白 → 黑
+            brightness(50%)     // 調整亮度  50% 代表變暗一半
+            sepia(50%)         // 奶茶色濾鏡  將顏色轉成棕黃色基底
+            saturate(1000%)      // 飽和度提升  讓顏色變超鮮豔（強化色彩）
+            hue-rotate(180deg)    // 色相旋轉  旋轉顏色（藍變橘、紅變青等）
+}
+
+tr{
+  height:50px;
+}
+/*控制欄位變化*/
+tr.btn:has(td:nth-child(-n+4):hover ) td:nth-child(-n+4){  // 固定前4格hover
+  color: rgba(0, 121, 161, 0.922);
+  font-weight: 700;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+.count:hover{
+  color: rgba(161, 0, 0, 0.922);
+  font-weight: 700;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.searchBtn{
+  background-color: rgba(120, 180, 255, 0.25);
+  border:1px solid;
+  margin-top:25px;
+  margin-left: 20px;
+  margin-right: 20px;
+  width:100px;
+  border-radius: 20px;
+  color: rgb(83, 83, 83);
+  font-size: 20px;
+  font-family: 'LXGW WenKai TC', monospace;
+}
+.searchBtn:hover{
+  background-color: rgba(87, 162, 255, 0.468) !important;
+  color: #ffffff;
+  transform: scale(0.85);
+  cursor: pointer;
+}
+.searchBtn.active {
+  background-color: rgba(42, 136, 250, 0.55);
+  color: white;
+  transform: scale(0.9);
+}
+
+
+.paginator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 35px;
+  font-size: 20px;
+  font-family: "LXGW WenKai TC", monospace;
+}
+.page-btn {
+  background-color: rgb(210,231,255);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: #4e4e4e;
+  font-size: 16px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+.page-btn:hover:not(:disabled) {
+  background-color: rgba(120, 181, 255, 0.838);
+  transform: scale(0.9);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

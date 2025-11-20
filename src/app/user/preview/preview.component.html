@@ -1,0 +1,48 @@
+<div style="position: fixed;pointer-events: none;inset: 0;
+            min-height: 100%;width: 100%;background-color: rgba(86, 86, 86, 0.884);
+            font-size: 20px; z-index: -1;"></div>
+<div style="display: flex;flex-direction: column;
+            top:0; left: 0; width: 100%;  height: 100%;
+            align-items: center;font-size: larger;">
+  <div style="position: relative;z-index: 10;width:1000px;border-radius: 15px;
+              height:fit-content;background-color: aliceblue;
+              display: flex;flex-direction: column;margin: 100px;
+              justify-content: center;align-items: center;">
+    <p style="justify-content: end;margin-left:700px;margin-top: 50px;">{{questionnaire.startTime}}~{{questionnaire.endTime}}</p>
+    <h1 style="justify-content: center;">{{questionnaire.title}}</h1>
+    <p style="margin-bottom: 30px;">{{questionnaire.message}}</p>
+
+    <div style="justify-content: center;align-items: center;
+                width:500px;">
+      <div style="display: flex;flex-direction: column;justify-content: baseline;
+                  align-items: baseline;margin-left: 100px;">
+        <label class="info">姓名 ：{{name}}</label><br>
+        <label class="info">手機 ：{{phone}}</label><br>
+        <label class="info">Email：{{email}}</label><br>
+        <label class="info">年齡 ：{{age}}</label><br>
+      </div>
+      <div style="display: flex; flex-direction: column;justify-content: center;
+                  align-items: center;">
+        <ol>
+          @for(ansID of this.answer;track $index){
+            @for(quesID of questionnaire.questionVoList;track $index){
+              @if(ansID[0]==quesID.questionId){
+                  <li style="width:300px;">{{quesID.question}}</li>
+                  <div style="width:300px;height:fit-content;word-break: break-all; overflow-wrap: break-word;">
+                    <p class="A">{{ansID[1]}}</p>
+                  </div>
+
+              }
+            }
+          }
+        </ol>
+      </div>
+    </div>
+    <div style="width:800px;display: flex;justify-content: space-between;">
+      <button (click)="goBack()"
+              style="margin-left: 0px;">← 返回修改</button>
+      <button (click)="goTo(previewData.questionnaireID)" style="margin-left:340px;">送出→</button>
+    </div>
+
+  </div>
+</div>

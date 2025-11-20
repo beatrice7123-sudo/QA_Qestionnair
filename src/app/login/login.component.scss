@@ -1,0 +1,124 @@
+.login-page {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #4f4f4f83;
+}
+
+/* blob 容器 */
+.blob-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+/* 調整 blob 尺寸為相對單位 */
+.blob1, .blob2 {
+  position: absolute;
+  width: 1100px;
+  height: 900px;
+  background-color: #ffe2a9e9;
+  animation: flow1 20s ease infinite;
+  // 套用下方的flow動畫
+  // 動畫 勻速
+  // 持續移動
+}
+
+/* 讓第二個 blob 稍微不同 */
+.blob2 {
+  animation: flow2 20s ease-in-out infinite;
+  // 動畫開始和結束速度變慢 中間速度快
+  // 持續移動
+}
+
+/* SVG */
+.lines {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1100px;   /* 固定大小，和 blob 差不多 */
+  height: 900px;   /* 保持相同比例 */
+  z-index: 2;
+  object-fit: contain;
+}
+
+/* 登入框 */
+.login-box {
+  position: absolute; /* 改成 absolute */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 完全置中 */
+  z-index: 5;
+
+  background-color: rgba(225, 241, 255, 0.9);
+  border-radius: 15px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  max-width: 400px;
+  width: 80vw;
+  max-height: 300px;
+  height: auto;
+}
+
+
+.login-box input {
+  border: 1px solid lightgray;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.login-box button {
+  background-color: #b5d8ff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.login-box button:hover {
+  background-color: #9fc9ff;
+}
+
+/* blob 動畫 */
+@keyframes flow1 {
+  0%,100% {
+    border-radius: 60% 40% 30% 55% / 58% 70% 40% 33%;
+    // 從本來方方正正的角扣進去 x軸方向 / y軸方向
+    // 左上 右上 右下 左下
+    transform: translate(0, 0) rotate(15deg);
+  }
+  50% {
+    border-radius: 40% 60% 50% 30% / 60% 20% 60% 50%;
+    transform: translate(2vw, -3vh) rotate(10deg);
+  }
+}
+
+@keyframes flow2 {
+  0%, 100% {
+    border-radius: 65% 35% 45% 55% / 55% 65% 35% 45%;
+    transform: translate(0, 0) rotate(-7deg);
+  }
+  50% {
+    border-radius: 35% 55% 60% 40% / 45% 35% 55% 45%;
+    transform: translate(-3vw, 2vh) rotate(-12deg);
+  }
+}

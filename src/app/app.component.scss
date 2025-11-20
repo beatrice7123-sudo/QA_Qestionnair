@@ -1,0 +1,336 @@
+// .button1{
+//   position: absolute;
+//   z-index: 1;
+// }
+// .button2{
+//   position: absolute;
+//   z-index: 1;
+//   top:50px;
+// }
+
+// .sidebar {
+//   position: fixed;
+//   top: 0;
+//   right: 0;
+//   height: 100vh;
+//   width: 40px;
+//   display: flex;
+//   flex-direction: row;
+//   border-radius: 15px 0 0 15px;
+//   overflow: hidden;
+//   transition: width 0.4s ease;
+//   z-index: 100;
+// }
+// .menu {
+//   width: 0px;
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   background-color: rgb(107, 171, 255);
+//   transition: 0.4s ease;
+// }
+// .trigger {
+//   position: relative;
+//   top:50px;
+//   width: 40px;
+//   height: 100px;
+//   background-color: rgb(107, 171, 255);
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   color: white;
+//   font-size: 20px;
+//   cursor: pointer;
+//   border-radius: 20px 0 0 20px;
+//   transition:  0.4s ease;
+// }
+// /* 透明遮罩 */
+// .overlay {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   width: 100vw;
+//   height: 100vh;
+//   background-color: rgba(0,0,0,0.4); /* 半透明黑 */
+//   opacity: 0;
+//   pointer-events: none;
+//   transition: opacity 0.4s ease;
+//   z-index: 50; /* 要比 sidebar 低 */
+// }
+
+// .sidebar:hover {
+//   width: 500px;
+// }
+// .sidebar:hover .menu {
+//   width:500px;
+// }
+// /* hover 時開啟遮罩 */
+// .sidebar:hover .overlay {
+//   opacity: 1;
+//   pointer-events: all;
+// }
+
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -500px;
+  height: 100vh;
+  width: 550px;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  transition: right 0.4s ease;
+  z-index: 100;
+}
+.sidebar.show {
+  right: 0; /* 滑出畫面 */
+}
+.openBtn{
+  position: fixed;
+  top: 50px;
+  width: 50px;
+  height: 100px;
+  border: none;
+  border-radius: 20px 0 0 20px;
+  color: rgb(102, 102, 102);
+  font-family: 'LXGW WenKai TC', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: rgb(210,231,255);
+  &.admin-bg {
+    background-color: #fff8e4;
+  }
+  transition: background-color 0.6s ease;
+
+  display: flex;
+  justify-content: center;
+  align-items:flex-start;
+}
+.arrow {
+  font-size: 48px;
+  display: inline-block;
+  transform: scaleY(1.5);    /* 拉長水平寬度 */
+  color:#6ba4e5;
+  &.admin-c {
+    color: #e7cc82;
+  }
+}
+.openBtn:hover {
+  border: none;
+  color: rgba(0, 0, 0, 0.916);
+}
+.openBtn:active {
+  transform: translateY(0px) scale(0.98);
+}
+.menuBlock {
+  position: fixed;
+  z-index: 20;
+  top: 50%;
+  right: -500px; /* 初始藏在右邊 */
+  transform: translateY(-50%);
+  width: 500px;
+  height: 100vh;
+  transition:
+    right 0.4s ease,
+    background-color 0.6s ease;
+  border:none;
+  border-radius: 10px 0 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d2e7ff;  // 一般使用者
+  &.admin-bg {
+    background-color: #fff8e4; // 管理員
+  }
+}
+.menuBlock.show {
+  right: 0; /* 滑出畫面 */
+}
+
+/* 遮罩層（反黑背景） */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0); /* 初始透明 */
+  opacity: 0;
+  pointer-events: none; /* 不阻擋點擊 */
+  transition: background 0.4s ease, opacity 0.4s ease;
+  z-index: 15;
+}
+.overlay.show {
+  background: rgba(0,0,0,0.5); /* 半透明黑底 */
+  opacity: 1;
+  pointer-events: all; /* 可點擊關閉 */
+}
+
+
+.decideBtn {
+  width: 30%;
+  height: 42px;
+  border: 2px solid rgb(102, 102, 102);
+  border-radius: 25px;
+  color: rgb(102, 102, 102);
+  font-size: 18px;
+  font-family: 'LXGW WenKai TC', monospace;
+  letter-spacing: 1px;
+  font-weight: 500;
+  background:  rgba(120, 180, 255, 0.25);
+  &.admin-bg {
+    background-color: #ffeec1;
+  }
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.decideBtn:hover {
+  border: 2px solid rgba(255, 255, 255, 0.916);
+  background:  #88c0ff;
+  color: rgba(255, 255, 255, 0.916);
+  &.admin-bg {
+    border: 2px solid rgba(109, 109, 109, 0.916);
+    background:  #f8dd9e;
+    color: rgba(109, 109, 109, 0.916);
+  }
+  transform: scale(1.1);
+}
+.decideBtn:active {
+  transform: scale(0.98);
+}
+.forInput{
+  width:70%;
+  height:20px;
+  border:none;
+  border-radius: 5px;
+  font-size: 15px;
+  background-color: #f1f8ff;
+  &.admin-bg {
+    background-color: #ffeab4c4;
+  }
+}
+
+.custom-radio {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin:0px 5px;
+}
+/* 隱藏原生 radio */
+.custom-radio input[type="radio"] {
+  display: none;
+}
+// 外圈
+.radio-mark {
+  width: 13px;
+  height: 13px;
+  border: 2px solid #666;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  transition: border-color 0.2s;
+}
+// 內圈
+.radio-mark::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-color: #6ba4e5;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
+}
+.radio-mark.admin-bg::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-color: #e7cc82;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
+}
+/* 選取時變色 */
+.custom-radio input[type="radio"]:checked + .radio-mark {
+  border-color: #6ba4e5;
+  &.admin-bg {
+    border-color: #e7cc82;
+  }
+}
+/* 選取時讓內圈出現 */
+.custom-radio input[type="radio"]:checked + .radio-mark::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+
+.mode-toggle {
+  margin-top: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: 'LXGW WenKai TC', sans-serif;
+}
+/* 左右文字 */
+.label {
+  width: 80px;
+  text-align: center;
+  color: #cecece96;
+  font-weight: 100;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.label.active {
+  color: #888;
+  font-weight: 500;
+}
+/* switch 主體 */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 70px;
+  height: 34px;
+}
+/* 隱藏 input */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* 背景條 */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, #b8d9ff, #91c4ff);
+  transition: 0.4s;
+  border-radius: 34px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
+}
+
+/* 圓點 */
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 26px; width: 26px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+/* 開啟狀態動畫 */
+.switch input:checked + .slider {
+  background: linear-gradient(90deg, #ffdf86, #ffedba);
+  box-shadow: 0 0 8px #ffe6a2;
+}
+.switch input:checked + .slider::before {
+  transform: translateX(36px);
+}

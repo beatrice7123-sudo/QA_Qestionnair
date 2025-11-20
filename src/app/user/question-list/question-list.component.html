@@ -1,0 +1,126 @@
+<div style="position: fixed;pointer-events: none;inset: 0;
+            min-height: 100%;width: 100%;background-color: rgba(86, 86, 86, 0.884);
+            font-size: 20px; z-index: -1;"></div>
+<div style="width:100vw;height:100vh;top:0;left: 0;
+            display: grid;place-items: center;font-size: 20px;">
+  <div style="display: flex; flex-direction: column;
+              justify-content: flex-start; align-items: center; width:1000px;
+              height: 670px; border: none; ">
+    <div style="background-color: aliceblue;
+                width: 1000px; height: 250px; border-radius: 15px;
+                display: flex; flex-direction: column;
+                justify-content: center; align-items: center;">
+      <div style="display: flex;flex-direction: column;align-items: baseline;margin-top: 40px;">
+        <label>
+          問卷名稱： <input (keyup)="letterSearch()" [(ngModel)]="searchData"
+                      style="width:555px;height:25px;background-color: rgba(120, 180, 255, 0.25);
+                            border:none;border-radius: 5px;"></label>
+        <label style="margin:13px;">
+          問卷時間：<input type="date" style="width:200px;height:25px;border-radius: 5px;
+                                              margin:0px 10px;text-align: center;font-size: 18px;
+                      background-color: rgba(120, 180, 255, 0.25);border:none; color: rgba(42, 136, 250, 0.721);" [(ngModel)]="searchBegin">
+          ~ <input type="date" style="width:200px;height:25px;border-radius: 5px;
+                                      margin:0px 10px;text-align: center;font-size: 18px;
+              background-color: rgba(120, 180, 255, 0.25);border:none; color: rgba(42, 136, 250, 0.721);" [(ngModel)]="searchEnd">
+          <button (click)="QuestionnaireDateSearch()" class="searchBtn"
+                  style="background-color: rgba(120, 180, 255, 0.25); border:1px solid;
+                          width:80px;border-radius: 7px;font-size: 15px;margin-top: 13px;
+                          font-family: 'LXGW WenKai TC', monospace;">開始搜尋</button>
+        </label>
+      </div>
+
+      <div style="height:70px;">
+        @for(btn of buttons;track $index;let i = $index){
+          <button class="searchBtn" (click)="selectButton(i)"
+                  [class.active]="selectedBtnIndex === i">
+            {{ btn.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div style="border: none;border-radius: 15px;
+                margin-top: 45px; width: 1000px;height: fit-content;">
+      <table style="width:100%; border-spacing: 0px;overflow: hidden;
+                    border-style: none; border-radius: 10px;background-color: aliceblue;">
+        <thead style="background-color: rgba(120, 180, 255, 0.25); text-align: center;">
+          <tr>
+            <th style="padding: 8px;">名稱</th>
+            <th style="padding: 8px;">狀態</th>
+            <th style="padding: 8px;">開始時間</th>
+            <th style="padding: 8px;">結束時間</th>
+            <!-- <th style="padding: 8px;">編輯</th> -->
+            <th style="padding: 8px;">結果</th>
+          </tr>
+        </thead>
+        <tbody style="text-align: center;background-color: aliceblue">
+
+          @if(this.dataSource.length==0){
+            <tr>
+              <td colspan="6" style="text-align: center;">查無資料</td>  <!-- colspan:跨越 -->
+            </tr>
+          }@else {
+            @for(eachRow of dataSource;track $index){
+              <!-- cursor：滑鼠游標樣式 pointer：手指圖示 -->
+
+              @if(eachRow.status==2){
+                <tr (click)="goToAns(eachRow.questionnaireID)" style="cursor: pointer;" class="btn">
+                  <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
+                      先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
+                  <td [innerHTML]="highlight(eachRow.title)"
+                      style="width:250px;">{{eachRow.title}}</td>
+                  <td>進行中</td>
+                  <td>{{eachRow.startTime}}</td>
+                  <td>{{eachRow.endTime}}</td>
+                  <!-- 控制pointer失效 -->
+                  <!-- <td></td> -->
+                  <td (click)="goToCount(eachRow.questionnaireID)" class="count">前往統計</td>
+                </tr>
+              }@else if(eachRow.status==1){
+                <tr>
+                  <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
+                      先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
+                  <td [innerHTML]="highlight(eachRow.title)"
+                      style="width:250px;">{{eachRow.title}}</td>
+                  <td>未開始</td>
+                  <td>{{eachRow.startTime}}</td>
+                  <td>{{eachRow.endTime}}</td>
+                  <!-- 控制pointer失效 -->
+                  <!-- <td style="pointer-events: none;"></td> -->
+                  <td>未開始</td>
+                </tr>
+              }@else {
+                <tr class="btn">
+                  <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
+                      先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
+                  <td [innerHTML]="highlight(eachRow.title)"
+                      style="width:250px;">{{eachRow.title}}</td>
+                  <td>已結束</td>
+                  <td>{{eachRow.startTime}}</td>
+                  <td>{{eachRow.endTime}}</td>
+                  <!-- 控制pointer失效 -->
+                  <!-- <td style="pointer-events: none;"></td> -->
+                  <td (click)="goToCount(eachRow.questionnaireID)" class="count">前往統計</td>
+                </tr>
+              }
+
+            }
+          }
+        </tbody>
+      </table>
+
+      @if(this.dataLength>5){
+        <div class="paginator">
+          <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">← 上一頁</button>
+          <span style="color: rgb(234, 234, 234);">{{ currentPage }} / {{ totalPages }}</span>
+          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">下一頁 →</button>
+        </div>
+      }
+
+    </div>
+
+  </div>
+
+</div>
+
+

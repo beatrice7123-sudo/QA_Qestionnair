@@ -1,0 +1,202 @@
+
+// input type="date"樣式
+::-webkit-calendar-picker-indicator {
+    filter: invert(1)           // 顏色反轉  黑 → 白、白 → 黑
+            brightness(50%)     // 調整亮度  50% 代表變暗一半
+            sepia(100%)         // 奶茶色濾鏡  將顏色轉成棕黃色基底
+            saturate(500%)      // 飽和度提升  讓顏色變超鮮豔（強化色彩）
+            hue-rotate(0deg)    // 色相旋轉  旋轉顏色（藍變橘、紅變青等）
+}
+
+tr{
+  height:50px;
+}
+/*控制欄位變化*/
+tr.btn td:nth-child(n+1){
+  cursor: none;
+}
+/* 當第 2~5 格其中任一格 hover 時，整列的第 2~5 格變色 */
+tr.btn:has(td:nth-child(n+2):nth-child(-n+6):hover)
+  td:nth-child(n+2):nth-child(-n+6) {
+  color: rgba(0, 121, 161, 0.922);
+  font-weight: 700;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.count:hover{
+  color: rgba(161, 0, 0, 0.922);
+  font-weight: 700;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.searchBtn{
+  background-color: #fff8e4;
+  border:1px solid;
+  margin-top:25px;
+  margin-left: 20px;
+  margin-right: 20px;
+  width:100px;
+  border-radius: 20px;
+  color: rgb(83, 83, 83);
+  font-size: 20px;
+  font-family: 'LXGW WenKai TC', monospace;
+}
+.searchBtn:hover{
+  background-color: #f8dd9e !important;
+  color: #a1a1a1;
+  transform: scale(0.85);
+  cursor: pointer;
+}
+.searchBtn.active {
+  background-color: #ffdc82;
+  color: rgb(138, 138, 138);
+  transform: scale(0.9);
+}
+
+
+.paginator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 35px;
+  font-size: 20px;
+  font-family: "LXGW WenKai TC", monospace;
+}
+.page-btn {
+  background-color: #fff8e4;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: #444;
+  font-size: 16px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+.page-btn:hover:not(:disabled) {
+  background-color: #f8dd9e;
+  transform: scale(0.9);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+dialog{
+  width:1000px;
+  height:600px;
+  background-color: #fffaed;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #ccc;
+}
+.tab-btn {
+  padding: 10px 20px;
+  border-radius: 5px 5px 0px 0px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.3s;
+}
+.tab-btn:hover {
+  background: #ffeec19d;
+}
+.tab-btn.active {
+  border-bottom: 3px solid #ffd86d;
+  font-weight: bold;
+}
+.tab-content {
+  padding: 20px;
+  background: #fafafa;
+}
+
+
+.dialogBtn {
+  width: 130px;
+  height: 42px;
+  border: 2px solid rgb(102, 102, 102);
+  border-radius: 25px;
+  background:  #ffeec1;
+  margin-bottom: 50px;
+  color: rgb(102, 102, 102);
+  font-size: 18px;
+  font-family: 'LXGW WenKai TC', monospace;
+  letter-spacing: 1px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.dialogBtn:hover {
+  border: 2px solid rgba(109, 109, 109, 0.916);
+  background:  #f8dd9e !important;
+  color: rgba(109, 109, 109, 0.916);
+  transform: scale(0.9);
+}
+.dialogBtn:active {
+  transform: scale(0.98);
+}
+
+
+.question-list {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 100px); /* 表格置中顯示 */
+  overflow: hidden; /* 沒編輯區時不出現滾動條 */
+}
+
+.edit-section {
+  margin: 10px auto;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+  width:auto;
+  border-spacing: 0px;
+  justify-content: center;
+  border-style: none;
+  border-radius: 10px;
+  background-color: #ffeec1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'LXGW WenKai TC', monospace;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.preview-section {
+  margin: 10px auto;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+  width:auto;
+  border-spacing: 0px;
+  justify-content: center;
+  border-style: none;
+  border-radius: 10px;
+  background-color: #ffeec1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'LXGW WenKai TC', monospace;
+}
+
+/* 顯示編輯區時允許滾動 */
+:host-context body {
+  overflow: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

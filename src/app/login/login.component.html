@@ -1,0 +1,34 @@
+<div class="login-page">
+  <div class="container">
+    <div class="blob-wrap">
+      <div class="blob1 blob-bg"></div>
+      <div class="blob2 blob-bg"></div>
+      <svg viewBox="0 0 1100 900" class="lines">
+        <g transform="scale(0.78) translate(-150, -10)">
+          <path
+            d="M240,700
+                C120,420 400,120 700,180  C950,220 1150,100 1350,280
+                C1500,420 1550,700 1450,850  C1320,980 1150,1050 900,1020
+                C700,1000 600,1040 420,940  C320,880 300,840 280,800
+                C260,760 250,740 240,700 Z"
+            fill="none"
+            stroke="black"
+            stroke-width="5">
+            <!-- d：曲線路徑 => Ｍ：Move to 起點座標 Ｃ：Cubic Bézier curve(貝茲曲線)
+                    每組都有三個控制點：
+                      。控制點1：決定曲線起點的「彎曲方向」
+                      。控制點2：決定曲線終點的「彎曲方向」
+                      。終點 ：曲線結束的位置
+                Ｚ：封閉線條 stroke：線條顏色 fill：填滿 -->
+          </path>
+        </g>
+      </svg>
+    </div>
+
+    <div class="login-box">
+      <label>帳號：<input type="text" placeholder="請輸入電子郵件" [(ngModel)]="email"></label>
+      <label>密碼：<input type="password" placeholder="請輸入密碼" [(ngModel)]="password"></label>
+      <button (click)="login()">登入</button>
+    </div>
+  </div>
+</div>
