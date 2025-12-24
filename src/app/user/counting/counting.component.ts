@@ -1,7 +1,9 @@
+// import { QuestionList } from './../question-list/question-list.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuestionRes,ServiceService } from './../../@service/service.service';
 import { Component } from '@angular/core';
 import Chart from 'chart.js/auto';
+import { HttpServiceService } from '../../@service/http-service.service';
 
 @Component({
   selector: 'app-counting',
@@ -14,12 +16,14 @@ export class CountingComponent {
     private service:ServiceService,
     private router:Router,
     private route:ActivatedRoute,
+    private http:HttpServiceService
   ){}
 
 
   userId!:number;  // 網址用
-  questionnaireID!:number;
-  newQdata:any={};
+  id!:number;
+  quiz:any;
+  question:any;
   forCount:any;
   countingData:any;
   total!:number;
@@ -34,26 +38,30 @@ export class CountingComponent {
     this.total=0;
 
     this.resultData=[];
-    this.questionnaireID=Number(this.route.snapshot.paramMap.get('qId'));
-    this.service.getAllQuestionnaires().subscribe(data=>{     // 全部問卷
-      for(let quesId of data){
-        if(this.questionnaireID==quesId.questionnaireID){
-          // 得到的ID控制使用者想看到的問卷
-          this.newQdata=quesId;  // 若得到的ID和問卷ID相符，則使用該筆問卷
-        }
-      }
+    this.id=Number(this.route.snapshot.paramMap.get('qId'));
+    this.http.getApi('http://localhost:8080/quiz/get_quiz?id='+this.id).subscribe((res:any)=>{     // 全部問卷
+      this.quiz=res.quiz;
+    })
+    this.http.getApi('http://localhost:8080/quiz/get_questions?quizId='+this.id).subscribe((res:any)=>{     // 全部問卷
+      this.question=res.questionVoList;
+      this.startCounting();
     })
 
     this.countingData=this.forCount;  // [ {使用者ID, { 題目ID: 答案(字串/陣列),.....}, {使用者ID, { 題目ID: 答案(字串/陣列),.....}, ....... } ]
     console.log(this.countingData);
+
+  }
+  startCounting(){
     for(let item of this.countingData){
+      console.log(this.quiz);
+      console.log(item.ans);
       // 答案的問卷ID = 問卷ID = 使用者選擇的ID
-      console.log(this.newQdata.questionnaireID,item.ans.questionnaireID);
-      if(item.ans.questionnaireID==this.newQdata.questionnaireID){  // 問卷ID核對答案的問卷ID，相同則執行紀錄
+      console.log(this.quiz.id,item.ans.id);
+      if(item.ans.id==this.quiz.id){  // 問卷ID核對答案的問卷ID，相同則執行紀錄
         this.total=this.total+1;
         this.countingData=item;  // 使用該筆答案
         console.log(this.countingData);
-        for(let i of this.newQdata.questionVoList){
+        for(let i of this.quiz.questionVoList){
 
           if(i.type=="single"){
             const questionId = i.questionId.toString();
@@ -68,7 +76,7 @@ export class CountingComponent {
                 }
               }
             }
-            this.resultData.push([this.newQdata.questionnaireID, { [questionId]: optionCountMap }]);  // 存紀錄
+            this.resultData.push([this.quiz.id, { [questionId]: optionCountMap }]);  // 存紀錄
           }else{
             if(i.type=="multiple"){
               const questionId = i.questionId.toString();
@@ -85,7 +93,7 @@ export class CountingComponent {
                   }
                 }
               }
-              this.resultData.push([this.newQdata.questionnaireID, { [questionId]: optionCountMap }]);  // 存紀錄
+              this.resultData.push([this.quiz.id, { [questionId]: optionCountMap }]);  // 存紀錄
             }else{
               if(i.options.length==0){
                 for(let y of Object.entries(this.countingData.ans.answers)){
@@ -135,10 +143,8 @@ export class CountingComponent {
     // }
 
 
-    console.log(this.newQdata,this.forCount,this.Result);
-
+    console.log(this.quiz,this.forCount,this.Result);
   }
-
   ngAfterViewInit(): void {
     setTimeout(() => this.renderCharts(), 300);
   }
@@ -146,12 +152,12 @@ export class CountingComponent {
 
   charts: { [id: string]: Chart } = {}; // 存已建立的圖表
   renderCharts() {
-    for (let i of this.newQdata.questionVoList) {
+    for (let i of this.question) {
       if (i.type === 'single' || i.type === 'multiple') {
         const ctx = document.getElementById(`chart-${i.questionId}`) as HTMLCanvasElement;
         if (!ctx) continue;  // 若還沒渲染則跳過
 
-        const Ans = this.Result.find(r => r[0] === this.newQdata.questionnaireID)?.[1][i.questionId];
+        const Ans = this.Result.find(r => r[0] === this.quiz.id)?.[1][i.questionId];
         if (!Ans) continue;
 
         if (this.charts[i.questionId]) {  // 並免重覆建立圖表

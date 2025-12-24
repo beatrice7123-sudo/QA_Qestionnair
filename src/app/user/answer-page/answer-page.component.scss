@@ -1,9 +1,14 @@
 .info{
-  margin-left: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .infoInput{
-  width:260px;
+  width:300px;
+  height:30px;
   margin-bottom: 0px;
+  border-radius: 5px;
+  border: #cccccc 1px solid;
 }
 .Q{
   margin:20px 0px;
@@ -34,7 +39,9 @@ button:active {
   transform: scale(0.98);
 }
 
-
+.question-list{
+  width:100%;
+}
 
 .question-list li {
   margin-bottom: 10px;
@@ -47,7 +54,7 @@ button:active {
 .question-list li.show::before {
   content: "";
   position: absolute;
-  left: 0;
+  left: 0px;
   top: 2px;
   width: 20px;          /* 圖片大小 */
   height: 20px;

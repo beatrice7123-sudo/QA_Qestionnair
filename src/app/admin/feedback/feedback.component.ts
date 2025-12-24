@@ -128,7 +128,7 @@ export class FeedbackComponent {
     this.resultData=[];
     this.service.getAllQuestionnaires().subscribe(data=>{     // 全部問卷
       for(let ques of data){
-        if(quizId==ques.questionnaireID){
+        if(quizId==ques.id){
           // 得到的ID控制管理者想看到的問卷
           this.newQdata=ques;  // 若得到的ID和問卷ID相符，則使用該筆問卷
         }

@@ -62,19 +62,18 @@
           }@else {
             @for(eachRow of dataSource;track $index){
               <!-- cursor：滑鼠游標樣式 pointer：手指圖示 -->
-
               @if(eachRow.status==2){
-                <tr (click)="goToAns(eachRow.questionnaireID)" style="cursor: pointer;" class="btn">
+                <tr (click)="goToAns(eachRow.id)" style="cursor: pointer;" class="btn">
                   <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
                       先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
                   <td [innerHTML]="highlight(eachRow.title)"
                       style="width:250px;">{{eachRow.title}}</td>
                   <td>進行中</td>
-                  <td>{{eachRow.startTime}}</td>
-                  <td>{{eachRow.endTime}}</td>
+                  <td>{{eachRow.startDate}}</td>
+                  <td>{{eachRow.endDate}}</td>
                   <!-- 控制pointer失效 -->
                   <!-- <td></td> -->
-                  <td (click)="goToCount(eachRow.questionnaireID)" class="count">前往統計</td>
+                  <td (click)="goToCount(eachRow.id)" class="count">前往統計</td>
                 </tr>
               }@else if(eachRow.status==1){
                 <tr>
@@ -83,24 +82,24 @@
                   <td [innerHTML]="highlight(eachRow.title)"
                       style="width:250px;">{{eachRow.title}}</td>
                   <td>未開始</td>
-                  <td>{{eachRow.startTime}}</td>
-                  <td>{{eachRow.endTime}}</td>
+                  <td>{{eachRow.startDate}}</td>
+                  <td>{{eachRow.endDate}}</td>
                   <!-- 控制pointer失效 -->
                   <!-- <td style="pointer-events: none;"></td> -->
                   <td>未開始</td>
                 </tr>
               }@else {
-                <tr class="btn">
+                <tr>
                   <!-- Angular 不允許在同一個元素上 同時使用 [innerHTML] 和插值 {{ }}，可以寫{{ }}但沒用，多餘寫的
                       先產生 <button>{{eachRow.title}}</button> => 再執行 [innerHTML]，把整個內容改成你回傳的字串（HTML 內容） -->
                   <td [innerHTML]="highlight(eachRow.title)"
                       style="width:250px;">{{eachRow.title}}</td>
                   <td>已結束</td>
-                  <td>{{eachRow.startTime}}</td>
-                  <td>{{eachRow.endTime}}</td>
+                  <td>{{eachRow.startDate}}</td>
+                  <td>{{eachRow.endDate}}</td>
                   <!-- 控制pointer失效 -->
                   <!-- <td style="pointer-events: none;"></td> -->
-                  <td (click)="goToCount(eachRow.questionnaireID)" class="count">前往統計</td>
+                  <td (click)="goToCount(eachRow.id)" class="count">前往統計</td>
                 </tr>
               }
 

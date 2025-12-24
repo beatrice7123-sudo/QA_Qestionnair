@@ -8,42 +8,55 @@
               height:fit-content;background-color: aliceblue;
               display: flex;flex-direction: column;margin: 100px;
               justify-content: center;align-items: center;">
-    <p style="justify-content: end;margin-left:700px;margin-top: 50px;">{{eachQuestionnaireData.startTime}}~{{eachQuestionnaireData.endTime}}</p>
-    <h1 style="justify-content: center;">{{eachQuestionnaireData.title}}</h1>
-    <p style="margin-bottom: 30px;">{{eachQuestionnaireData.message}}</p>
+    <!-- API 是 非同步，Angular Template 會 先渲染一次畫面，此時資料還沒回來 → 物件是 undefined
+         安全導航 「 ?. 」  =>  quiz 是 undefined→不顯示 ， quiz 有值→正常顯示 -->
+    <p style="justify-content: end;margin-left:600px;margin-top: 50px;">{{eachQuiz?.startDate}}~{{eachQuiz?.endDate}}</p>
+    <h1 style="justify-content: center;">{{eachQuiz?.title}}</h1>
+    <p style="margin:30px 100px;">{{eachQuiz?.description}}</p>
 
     <div>
       <div style="display: flex;flex-direction: column;justify-content: center;
-                  align-items: center;margin-left:50px;">
-        <label class="info">姓名 ：<input [(ngModel)]="userName" class="infoInput"></label><br>
-        <label class="info">手機 ：<input [(ngModel)]="userPhone" class="infoInput"></label><br>
-        <label class="info">Email：<input [(ngModel)]="userEmail" class="infoInput"></label><br>
-        <label class="info">年齡 ：<input [(ngModel)]="userAge" class="infoInput"></label><br>
+                  align-items: center;">
+        <label class="info">姓名 ：<input [(ngModel)]="userName" class="infoInput">
+          <p style="margin-left: 20px;">手機 ：<input [(ngModel)]="userPhone" class="infoInput"></p></label>
+        <label class="info">Email：<input [(ngModel)]="userEmail" class="infoInput">
+          <p style="margin-left: 20px;">年齡 ：<input [(ngModel)]="userAge" class="infoInput"></p></label>
       </div>
-      <div style="display: flex; flex-direction: column;justify-content: center;
-                  align-items: center;margin-left: 55px;">
+      <div style="width:800px;display: flex; flex-direction: column;justify-content: center;
+                  align-items: center;">
         <ol class="question-list">
-          @for (Q of eachQuestionnaireData.questionVoList; track $index){
-            <li [class.show]=Q.required>{{Q.question}}</li>
-            @if(Q.type==="single"){
-              @for(i of Q.options;track $index){
-                <input type="radio" name="{{Q.questionId}}" [value]="i"
-                class="Q" [(ngModel)]="Answer[Q.questionId]"
-                (change)="selectedSingle(Q.questionId, i)">{{i}}
+          @for (Q of eachQuestionnaireData; track $index){
+            <li [class.show]=Q.required style="display:flex; align-items: baseline;margin-left: 5%;">
+              <p style="margin:0px 10px;min-width: 0; overflow-wrap: break-word; word-wrap: break-word;">{{Q.question}}</p></li>
+            <div style="display: flex; flex-direction: row; justify-content:space-evenly;align-items: center;">
+              @if(Q.type==="single"){
+                @for(i of Q.optionsList;track $index){
+                  <label style="height:fit-content; display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap:10px;">
+                    <input type="radio"
+                          [name]="'q-' + Q.questionId"
+                          [checked]="checkIsSelected(Q.questionId, i.code)"
+                          (change)="selectedSingle(Q.questionId, i)">{{i.optionName}}
+                  </label>
+                }
               }
-            }
-            @if(Q.type==="multiple"){
-              @for(i of Q.options;track $index){
-                <input type="checkbox" class="Q"
-                [checked]="Answer[Q.questionId]?.includes(i)"
-                (change)="selectedMultiple(Q.questionId, i, $event)">{{i}}
+              @if(Q.type==="multiple"){
+                @for(i of Q.optionsList;track $index){
+                  <label style="height:fit-content; display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap:10px;">
+                    <input type="checkbox"
+                          [checked]="checkIsSelected(Q.questionId, i.code)"
+                          (change)="selectedMultiple(Q.questionId, i, $event)">{{i.optionName}}
+                  </label>
+                }
               }
-            }
-            @if(Q.type==="text"){
-              <textarea class="Q" style="width:300px;height:100px;"
-              [value]="Answer[Q.questionId] || ''"
-              (input)="selectedText(Q.questionId, $event)"></textarea>
-            }
+              @if(Q.type==="text"){
+                <label style="height:fit-content; display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap:10px;">
+                  <textarea class="Q"
+                            style="width:650px; height:100px;"
+                            [value]="Answer[Q.questionId]?.answerVoList?.[0]?.optionName || ''"
+                            (input)="selectedText(Q.questionId, $event)"></textarea>
+                </label>
+              }
+            </div>
           }
         </ol>
       </div>
@@ -52,7 +65,7 @@
     <div style="width:800px;display: flex;justify-content: space-between;">
       <button (click)="cancel()"
               style="margin-left: 0px;">← 取消填寫</button>
-      <button (click)="preview()" style="margin-left:340px;">預覽→</button>
+      <button (click)="preview()" style="margin-left:340px;">預覽 →</button>
     </div>
     <div>
       @if(sendSuccess){

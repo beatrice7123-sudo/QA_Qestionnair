@@ -1,78 +1,103 @@
 @if(showLayout){
   <div class="sidebar" [class.show]="show">
-    <button (click)="member()" class="openBtn" [class.admin-bg]="isAdmin">
-      <span class="arrow" [class.admin-c]="isAdmin">&lsaquo;</span> <!-- &lsaquo;為 < 在HTML的實體名稱-->
+    <button (click)="member()" class="openBtn" [class.admin-bg]="checkPass">
+      @if(!show){
+        <span class="sign" style="font-size: 48px;margin-top: 20%; transform: scaleY(1.5); /* 拉長水平寬度 */"
+              [class.admin-c]="checkPass">&lsaquo;</span> <!-- &lsaquo;為 < 在HTML的實體名稱-->
+      }@else{
+        <span class="sign" style="font-size: 35px;margin-top:60%;margin-left: 30%;font-weight:bold;"
+              [class.admin-c]="checkPass">✕</span>
+      }
     </button>
     <div
       class="menuBlock"
-      [class.show]="show" [class.admin-bg]="isAdmin">
+      [class.show]="show" [class.admin-bg]="checkPass">
       <!-- (mouseenter)="onEnterMenu()"
       (mouseleave)="onLeaveMenu()" -->
 
       @if(nowUser){
-        <div style="display: flex;flex-direction: column;width:50%;justify-content: center;align-items: center;">
-          <label style="width: 100%;">
-            <div style="margin-left: 90%;cursor: pointer;" (click)="infoEdit()">
-            🖉</div>
-          </label>
-
-          @if(!isOpenEdit){
-            <div style="display:flex;flex-direction: column;justify-content: center;">
-              <label style="display: flex;flex-direction: row; margin:10px 0px;">姓名：{{nowUser.name}}</label>
-              <label style="display: flex;flex-direction: row; margin:10px 0px;">電話：{{nowUser.phone}}</label>
-              <label style="display: flex;flex-direction: row; margin:10px 0px;">生日：{{nowUser.birthDate}}</label>
-              @if(nowUser.gender=='male'){
-                <label style="display: flex;flex-direction: row; margin:10px 0px;">性別：男性</label>
-              }@else if(nowUser.gender=='female'){
-                <label style="display: flex;flex-direction: row; margin:10px 0px;">性別：女性</label>
-              }@else{
-                <label style="display: flex;flex-direction: row; margin:10px 0px;">性別：其他</label>
+        <div>
+          <div>
+            <label style="width:100%;position:absolute;top:30px;left:380px;">
+              <img src="/logout.png" (click)="logout()"
+                      class="logoutBtn" [class.admin-bg]="checkPass">
+              <!-- <button (click)="logout()"
+                      class="decideBtn" [class.admin-bg]="checkPass"
+                      style="width:20%">登出➜]</button> -->
+            </label>
+          </div>
+          <div style="display: flex;flex-direction: column;width:100%;justify-content: center;
+                      align-items: center;position: relative;bottom:30px;left:30px;">
+            <label style="width: 100%;">
+              <div style="margin-left: 90%;cursor: pointer;" (click)="infoEdit()">
+              🖉</div>
+            </label>
+            @if(!isOpenEdit){
+              <div style="display:flex;flex-direction: column;justify-content: center;width:100%;font-size: larger;">
+                <label style="display: flex;flex-direction: row; margin:10px 0px;">姓名：{{nowUser.name}}</label>
+                <label style="display: flex;flex-direction: row; margin:10px 0px;">電話：{{nowUser.phone}}</label>
+                <label style="display: flex;flex-direction: row; margin:10px 0px;">生日：{{nowUser.birthDate}}</label>
+                @if(nowUser.gender=='male'){
+                  <label style="display: flex;flex-direction: row; margin:10px 0px;">性別：男性</label>
+                }@else if(nowUser.gender=='female'){
+                  <label style="display: flex;flex-direction: row; margin:10px 0px;">性別：女性</label>
+                }@else{
+                  <label style="display: flex;flex-direction: row; margin:10px 0px;">性別：其他</label>
+                }
+              </div>
+              @if(nowUser.admin==true){
+                <div class="mode-toggle">
+                  <span class="label left" [class.active]="!isAdmin">會員</span>
+                  <label class="switch">
+                    <input type="checkbox" [(ngModel)]="isAdmin" (ngModelChange)="chooseMode($event)">
+                    <span class="slider"></span>
+                  </label>
+                  <span class="label right" [class.active]="isAdmin">管理員</span>
+                </div>
               }
-            </div>
-            @if(nowUser.admin==true){
-              <div class="mode-toggle">
-                <span class="label left" [class.active]="!isAdmin">會員</span>
-                <label class="switch">
-                  <input type="checkbox" [(ngModel)]="isAdmin" (ngModelChange)="chooseMode($event)">
-                  <span class="slider"></span>
-                </label>
-                <span class="label right" [class.active]="isAdmin">管理員</span>
+            }@else{
+              <div style="display: flex;flex-direction: column;width:100%;">
+                <div style="display: flex;flex-direction: column;">
+                  <label style="display: flex;flex-direction: row; margin:10px 0px;">
+                    姓名：<input type="text" class="forInput" [class.admin-bg]="checkPass" [(ngModel)]="nowUser.name"></label>
+                  <label style="display: flex;flex-direction: row; margin:10px 0px;">
+                    電話：<input type="text" class="forInput" [class.admin-bg]="checkPass" [(ngModel)]="nowUser.phone"></label>
+                  <label style="display: flex;flex-direction: row; margin:10px 0px;">
+                    生日：<input type="Date" class="forInput" [class.admin-bg]="checkPass" [(ngModel)]="nowUser.birthDate"></label>
+                  <label style="display: flex;flex-direction: row; margin:10px 0px;">
+                    性別：
+                    <label class="custom-radio" [class.admin-bg]="checkPass">
+                      <input type="radio" value="male" name="gender" [(ngModel)]="nowUser.gender">
+                      <span class="radio-mark" [class.admin-bg]="checkPass"></span>男性</label>
+                    <label class="custom-radio" [class.admin-bg]="checkPass">
+                      <input type="radio" value="female" name="gender" [(ngModel)]="nowUser.gender">
+                      <span class="radio-mark" [class.admin-bg]="checkPass"></span>女性</label>
+                    <label class="custom-radio" [class.admin-bg]="checkPass">
+                      <input type="radio" value="other" name="gender" [(ngModel)]="nowUser.gender">
+                      <span class="radio-mark" [class.admin-bg]="checkPass"></span>其他</label>
+                  </label>
+                </div>
+                <div style="display: flex;flex-direction: row;justify-content: space-between;">
+                  <button (click)="cancel()" class="decideBtn" style="margin-top: 10%;" [class.admin-bg]="checkPass">取消</button>
+                  <button (click)="commit()" class="decideBtn" style="margin-top: 10%;" [class.admin-bg]="checkPass">確認</button>
+                </div>
+                @if(commitOK==true){
+                  <div style="width:60%;height:30%;background-color: aliceblue;position:absolute;
+                              z-index:75;top:35%;right:20%;border-radius: 15px;">
+                    <p style="height:85%;display: flex;justify-content: center;align-items: center;">儲存成功</p></div>
+                }
               </div>
             }
-            <button (click)="logout()"
-                    class="decideBtn" [class.admin-bg]="isAdmin"
-                    style="margin-top: 50%;">登出</button>
-          }@else{
-            <div style="display: flex;flex-direction: column;width:100%;">
-              <div style="display: flex;flex-direction: column;">
-                <label style="display: flex;flex-direction: row; margin:10px 0px;">
-                  姓名：<input type="text" class="forInput" [class.admin-bg]="isAdmin" [(ngModel)]="nowUser.name"></label>
-                <label style="display: flex;flex-direction: row; margin:10px 0px;">
-                  電話：<input type="text" class="forInput" [class.admin-bg]="isAdmin" [(ngModel)]="nowUser.phone"></label>
-                <label style="display: flex;flex-direction: row; margin:10px 0px;">
-                  生日：<input type="Date" class="forInput" [class.admin-bg]="isAdmin" [(ngModel)]="nowUser.birthDate"></label>
-                <label style="display: flex;flex-direction: row; margin:10px 0px;">
-                  性別：
-                  <label class="custom-radio" [class.admin-bg]="isAdmin">
-                    <input type="radio" value="male" name="gender" [(ngModel)]="nowUser.gender">
-                    <span class="radio-mark" [class.admin-bg]="isAdmin"></span>男性</label>
-                  <label class="custom-radio" [class.admin-bg]="isAdmin">
-                    <input type="radio" value="female" name="gender" [(ngModel)]="nowUser.gender">
-                    <span class="radio-mark" [class.admin-bg]="isAdmin"></span>女性</label>
-                  <label class="custom-radio" [class.admin-bg]="isAdmin">
-                    <input type="radio" value="other" name="gender" [(ngModel)]="nowUser.gender">
-                    <span class="radio-mark" [class.admin-bg]="isAdmin"></span>其他</label>
-                </label>
-              </div>
-              <div style="display: flex;flex-direction: row;justify-content: space-between;">
-                <button (click)="cancel()" class="decideBtn" style="margin-top: 10%;" [class.admin-bg]="isAdmin">取消</button>
-                <button (click)="commit()" class="decideBtn" style="margin-top: 10%;" [class.admin-bg]="isAdmin">確認</button>
-              </div>
-              @if(commitOK==true){
-                <div style="width:60%;height:30%;background-color: aliceblue;position:absolute;z-index: 75;top:35%;right:20%;border-radius: 15px;"></div>
-              }
-            </div>
-          }
+          </div>
+          <div>
+            <label class="passwordInput" [class.open]="doubleCheck">
+              密碼 : <input type="password" [(ngModel)]="password"
+                        class="forInput" [class.admin-bg]="checkPass" style="width: 50%;">
+              <button (click)="PasswordCheck()"
+                      class="decideBtn" [class.admin-bg]="checkPass"
+                      style="width: 20%; height: 30px;font-size: 15px;margin-left:20px;">確認</button>
+            </label>
+          </div>
         </div>
       }
 

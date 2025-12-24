@@ -109,10 +109,7 @@
   justify-content: center;
   align-items:flex-start;
 }
-.arrow {
-  font-size: 48px;
-  display: inline-block;
-  transform: scaleY(1.5);    /* 拉長水平寬度 */
+.sign {
   color:#6ba4e5;
   &.admin-c {
     color: #e7cc82;
@@ -273,6 +270,7 @@
 
 .mode-toggle {
   margin-top: 10%;
+  margin-right: 18%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -314,7 +312,6 @@
   border-radius: 34px;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
 }
-
 /* 圓點 */
 .slider::before {
   content: "";
@@ -333,4 +330,34 @@
 }
 .switch input:checked + .slider::before {
   transform: translateX(36px);
+}
+
+.passwordInput{
+  display: block;
+  position:fixed;
+  width:60%;
+  height:0px;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    height 0.6s ease,
+    opacity 1s ease;
+}
+.passwordInput.open{
+  height:50px;
+  opacity: 1;
+}
+
+.logoutBtn {
+  width:50px;
+  height:50px;
+  margin-top: 5%;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.logoutBtn:hover {
+  transform: scale(1.1);
+}
+.logoutBtn:active {
+  transform: scale(0.98);
 }

@@ -4,10 +4,12 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuizCreateReq, ServiceService } from '../../@service/service.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { HttpServiceService } from '../../@service/http-service.service';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-question-list-manage',
-  imports: [ FormsModule ],
+  imports: [ FormsModule, JsonPipe ],
   templateUrl: './question-list-manage.component.html',
   styleUrl: './question-list-manage.component.scss'
 })
@@ -16,7 +18,8 @@ export class QuestionListManageComponent {
   constructor(private router:Router,
     private service:ServiceService,
     private sanitizer:DomSanitizer,  // 標記安全HTML
-    private route:ActivatedRoute
+    private route:ActivatedRoute,
+    private http:HttpServiceService
   ){}
 
 
@@ -29,36 +32,32 @@ export class QuestionListManageComponent {
   totalPages = 1;
   dataLength!:number;
   filteredData: any[] = [];   // 篩選後的問卷（全部、進行中、未開始、已結束）
-  questionList:any[]=[];  // tab2用
+  questionVoList:any[]=[];  // tab2用
 
   deleteQuestionnaire:number[]=[];  // 刪除問卷用
   deleteQ:number[]=[];  // 刪除問題用
 
   ngOnInit(): void {
-
     this.userId=Number(this.route.snapshot.paramMap.get('userId'));
     this.service.getAllQuestionnaires().subscribe(data => {  // 管理員不需判斷發布沒
       this.dataSource = data;
+      this.tell();
+      this.originalData=this.dataSource;  // 避免資料越找越少
+      this.selectButton(0);
+      // 分頁初始化
+      this.All();
     });
-
-
-    this.tell();
-    this.originalData=this.dataSource;  // 避免資料越找越少
-    this.selectButton(0);
-    // 分頁初始化
-    this.All();
-
   }
   tell(){
     // 原時間資料判斷
     let begin!:Date;
     let end!:Date;
     for(let eachOne of this.dataSource){
-      begin=new Date(eachOne.startTime);
-      end=new Date(eachOne.endTime);
+      begin=new Date(eachOne.startDate);
+      end=new Date(eachOne.endDate);
       begin.setHours(0,0,0,0);
       end.setHours(23, 59, 59, 999);
-      if(eachOne.question_status==false){
+      if(eachOne.published==false){
         eachOne.status=4;  // 未發布
       }else{
         if(new Date().getTime() < begin.getTime()){
@@ -78,40 +77,59 @@ export class QuestionListManageComponent {
   // 即時搜尋
   searchData!:string;
   letterSearch(){
-    const eachLetter = this.searchData.toLowerCase().split('');  // split('')拆成單一字母並組成陣列
-    const searchResult = this.originalData.filter((item:any) =>                 // filter陣列的篩選法
+    let eachLetter:string[]=[];
+    if(this.searchData!=this.searchData.toLowerCase()){
+       eachLetter= this.searchData.toLowerCase().split('');  // split('')拆成單一字母並組成陣列
+    }else{
+      eachLetter= this.searchData.split('');  // split('')拆成單一字母並組成陣列
+    }
+    const searchResult = this.originalData.filter((item:any) =>     // filter:陣列的篩選法
       eachLetter.every(c => item.title.toLowerCase().includes(c))
     );
     this.paginator(searchResult);
     this.dataLength=searchResult.length;
   }
   highlight(text: string): SafeHtml {
-    if (!this.searchData) return text;  // 沒輸入就不處理
-    let highLightLetter = this.searchData.toLowerCase().split('');
-    let result = text;
-    for (let c of highLightLetter) {
-          // 建立不分大小寫的正則式 (正規表達式通常被用來檢索、替換那些符合某個模式的文字)
-          // 'gi'： (g=>globel + i=>ignoreCase) => 不論大小寫全部搜索
-          // 當 replace() 被多次執行時，會在已經插入的 <span> 裡面又再插入另一個 <span>，會破壞原本已經replace好的HTML
-          // 用暫存符號標記，避免破壞 HTML
-      const regex = new RegExp(`(${c})`, 'gi');  // 找到指定字元 ()建立字元群組 供後續建立HTML標籤使用
-      result = result.replace(regex,'[[HIGHLIGHT:$1]]');  // $1： 跑(${c})裡的內容 將符合的位置用特殊符號包起來，這裡標註成 [[HIGHLIGHT:字元]]
-    }
-        // 把暫存符號，這裡指的是[[HIGHLIGHT:字元]]，轉成 HTML<span> 標籤
-            //  / ... /g   ： 這是一個「正則表達式 (RegExp)」， g 表示要全域搜尋（不只取第一個匹配)
-            //  \[\[       ： 匹配字面上的 [[ ，因為 [ 是特殊符號，要加 \ 跳脫
-            //  HIGHLIGHT: ： 固定文字，表示要找的開頭是 HIGHLIGHT: 的部分
-            //  (.*?)      ： 括號是群組，用來「捕捉」中間要取出的內容（即要高亮的文字）
-            //  .*?        ： 代表「任何字元、最短匹配」
-            //  \]\]       ： 匹配字面上的 ]]，結尾符號
-    result= result.replace(/\[\[HIGHLIGHT:(.*?)\]\]/g, `<span style="color:	red;font-weight:bold;">$1</span>`);
-        // ### 說明：https://blog.csdn.net/rubys007/article/details/136118107
-        // 渲染HTML通常會引入跨站腳本攻擊。(XSS)的潛在風險。渲染的HTML可能包含惡意腳本,構成安全性問題。
-        // 解決XSS的一種方法是限制HTML元素和屬性的種類,只允許一組已知的「安全」元素和屬性。
-        // 在幕後,[innerHTML]使用Angular的DomSanitizer,它使用一組經過批准的HTML元素和屬性。
-        // 這將限制你的[innerHTML]值不能使用<script>和<style>標籤以及style屬性。在選擇使用[innerHTML]時要牢記這一限制。
+    if (!this.searchData || !text) return text;
+    // 1. 處理特殊字元（防止使用者輸入像 * + ? 等正則符號導致當機）
+    const escapedSearch = this.searchData.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // 2. 搜尋個別字元 (例如輸入 "ft"，所有 "f" 和 "t" 都會紅)
+    const letters = escapedSearch.split('').join('|');
+    //g (Global)：全域搜尋，不只找第一個，而是找整段文字中所有匹配的部分。
+    //i (Ignore Case)：不分大小寫，搜尋 "A" 也會高亮 "a"。
+    const regex = new RegExp(`(${letters})`, 'gi');
+    // 3. 一次性取代，不要分兩次執行，避免 self-replacement
+    const result = text.replace(regex, '<span style="color: red; font-weight: bold;">$1</span>');
+
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
+  // highlight(text: string): SafeHtml {
+  //   if (!this.searchData) return text;  // 沒輸入就不處理
+  //   let highLightLetter = this.searchData.toLowerCase().split('');
+  //   let result = text;
+  //   for (let c of highLightLetter) {
+  //         // 建立不分大小寫的正則式 (正規表達式通常被用來檢索、替換那些符合某個模式的文字)
+  //         // 'gi'： (g=>globel + i=>ignoreCase) => 不論大小寫全部搜索
+  //         // 當 replace() 被多次執行時，會在已經插入的 <span> 裡面又再插入另一個 <span>，會破壞原本已經replace好的HTML
+  //         // 用暫存符號標記，避免破壞 HTML
+  //     const regex = new RegExp(`(${c})`, 'gi');  // 找到指定字元 ()建立字元群組 供後續建立HTML標籤使用
+  //     result = result.replace(regex,'[[HIGHLIGHT:$1]]');  // $1： 跑(${c})裡的內容 將符合的位置用特殊符號包起來，這裡標註成 [[HIGHLIGHT:字元]]
+  //   }
+  //       // 把暫存符號，這裡指的是[[HIGHLIGHT:字元]]，轉成 HTML<span> 標籤
+  //           //  / ... /g   ： 這是一個「正則表達式 (RegExp)」， g 表示要全域搜尋（不只取第一個匹配)
+  //           //  \[\[       ： 匹配字面上的 [[ ，因為 [ 是特殊符號，要加 \ 跳脫
+  //           //  HIGHLIGHT: ： 固定文字，表示要找的開頭是 HIGHLIGHT: 的部分
+  //           //  (.*?)      ： 括號是群組，用來「捕捉」中間要取出的內容（即要高亮的文字）
+  //           //  .*?        ： 代表「任何字元、最短匹配」
+  //           //  \]\]       ： 匹配字面上的 ]]，結尾符號
+  //   result= result.replace(/\[\[HIGHLIGHT:(.*?)\]\]/g, `<span style="color:	red;font-weight:bold;">$1</span>`);
+  //       // ### 說明：https://blog.csdn.net/rubys007/article/details/136118107
+  //       // 渲染HTML通常會引入跨站腳本攻擊。(XSS)的潛在風險。渲染的HTML可能包含惡意腳本,構成安全性問題。
+  //       // 解決XSS的一種方法是限制HTML元素和屬性的種類,只允許一組已知的「安全」元素和屬性。
+  //       // 在幕後,[innerHTML]使用Angular的DomSanitizer,它使用一組經過批准的HTML元素和屬性。
+  //       // 這將限制你的[innerHTML]值不能使用<script>和<style>標籤以及style屬性。在選擇使用[innerHTML]時要牢記這一限制。
+  //   return this.sanitizer.bypassSecurityTrustHtml(result);
+  // }
 /*--------------------------------------------------------------*/
   // 問卷開始時間搜尋
   searchBegin!:string;
@@ -123,8 +141,8 @@ export class QuestionListManageComponent {
     const beginDate = this.searchBegin ? new Date(this.searchBegin) : null;  // 畫面傳來的searchDate是string，所以要進行資料類型轉換
     const endDate = this.searchEnd ? new Date(this.searchEnd) : null;
     for(let date of this.originalData){
-      QAbegin=new Date(date.startTime);
-      QAend=new Date(date.endTime);
+      QAbegin=new Date(date.startDate);
+      QAend=new Date(date.endDate);
       if(beginDate && endDate){
         if(endDate<beginDate){
           alert("結束日期不可早於開始日期，請重新選擇");
@@ -270,49 +288,57 @@ export class QuestionListManageComponent {
     }
   }
   goToTrashcan() {
-    if (this.deleteQuestionnaire.length > 0) {
-      this.service.deleteQuestionnaires(this.deleteQuestionnaire).subscribe({
-        next: res => {
-          console.log('刪除成功', res);
-          this.service.getAllQuestionnaires().subscribe(data=>{
-            this.paginator(data);
-          });
-        },
-        error: err => {
-          console.error('刪除失敗', err);
+    console.log(this.deleteQuestionnaire);
+    let deleteData:number[]=[];
+    for(let quiz of this.originalData){
+      for(let id of this.deleteQuestionnaire){
+        if(id==quiz.id && quiz.status==2){
+          alert("部分問卷進行中，無法刪除");
+          return; //直接結束
+        }else if(id==quiz.id && quiz.status!=2){
+          deleteData.push(id);
+        }
+      }
+    }
+    if (deleteData.length > 0) {
+      this.http.postApi('http://localhost:8080/quiz/delete', deleteData).subscribe((res:any)=>{
+        if(res.code === 200) {
+          this.service.refreshQuestionnaires();
         }
       });
     }else if(this.deleteQ.length > 0){
-      this.questionList = this.questionList.filter(q => !this.deleteQ.includes(q.questionID));
+      this.questionVoList = this.questionVoList.filter(q => !this.deleteQ.includes(q.questionId));
       console.log('已刪除題目:', this.deleteQ);
       this.deleteQ = []; // 清空選取列表
     }
   }
 /*--------------------------------------------------------------*/
-  @ViewChild('myDialog') dialog!: ElementRef<HTMLDialogElement>;
+  @ViewChild('addQuizDialog') addQuizDialog!: ElementRef<HTMLDialogElement>;
   openDialog() {
     this.editingQuestion=null;  // 重置編輯狀態
     this.previewQuestion=null;
-    this.questionList=[];
+    this.questionVoList=[];
     this.title='';
     this.description=''
-    this.startDate
+    this.startDate='';
+    this.endDate='';
     this.question = '';
     this.type = '';
     this.required = false;
-    this.options = [];
-    this.dialog.nativeElement.showModal();
+    this.optionsList = [];
+    this.addQuizDialog.nativeElement.showModal();
   }
   closeDialog() {
-    this.dialog.nativeElement.close();
+    this.addQuizDialog.nativeElement.close();
+    this.reviseDialog.nativeElement.close();
   }
   activeTab: string = 'tab1';
         /*--------------------------------------------------------------*/
   // tab1
   title!:string;
   description!:string;
-  startDate!:Date;
-  endDate!:Date;
+  startDate!:string;
+  endDate!:string;
   cancel(){
     if(!this.title && !this.description && !this.startDate && !this.endDate){
       this.closeDialog();
@@ -324,49 +350,50 @@ export class QuestionListManageComponent {
   }
   startReturn!:string;
   endReturn!:string;
+  Begin!:Date;
+  End!:Date;
   saveQuestion(){
-    const Begin=new Date(this.startDate);
-    const End=new Date(this.endDate);
-    Begin.setHours(0,0,0,0);
-    End.setHours(23, 59, 59 ,999);
-    this.startDate=Begin;
-    this.endDate=End;
+    this.Begin=new Date(this.startDate);
+    this.End=new Date(this.endDate);
+    this.Begin.setHours(0,0,0,0);
+    this.End.setHours(23, 59, 59 ,999);
+    console.log(this.Begin, this.End, this.startDate, this.endDate);
     // 驗證是否有填日期、時間是否有效
-    if(!this.startDate || !this.endDate || isNaN(Begin.getTime()) || isNaN(End.getTime())){
+    if(!this.startDate || !this.endDate || isNaN(this.Begin.getTime()) || isNaN(this.End.getTime())){
       alert("請填寫完整時間");
       return;
     }else{
-      if(this.startDate.getDate() < new Date().getDate()){
+      if(this.Begin.getDate() < new Date().getDate()){
         alert("開始時間不可在今天之前");
         return;
-      }else if(this.endDate.getTime() <= new Date().getTime()){
+      }else if(this.End.getTime() <= new Date().getTime()){
         alert("結束時間不可在今天之前");
         return;
-      }else if(this.startDate.getTime() >= this.endDate.getTime()){
+      }else if(this.Begin.getTime() >= this.End.getTime()){
         alert("開始時間不可比結束時間晚");
         return;
       }
     }
-    this.startReturn=new Date(this.startDate).toISOString().split('T')[0];
-    this.endReturn=new Date(this.endDate).toISOString().split('T')[0];
+    this.startReturn=this.formatDate(this.Begin);
+    this.endReturn=this.formatDate(this.End);
     this.activeTab='tab2';
   }
         /*--------------------------------------------------------------*/
   // tab2
   // 必填/選填變更 (當使用者勾選 / 取消勾選時觸發)
-  selected: number[] = []; // 存放已勾選的 questionID
+  selected: number[] = []; // 存放已勾選的 questionId
   onRequiredChange(eachQ: any) {
     if (eachQ.required) {
       // 如果勾選 → 加入 selected 陣列（避免重複）
-      if (!this.selected.includes(eachQ.questionID)) {
-        this.selected.push(eachQ.questionID);
+      if (!this.selected.includes(eachQ.questionId)) {
+        this.selected.push(eachQ.questionId);
       }
     } else {
       // 如果取消勾選 → 從 selected 陣列移除
-      this.selected = this.selected.filter(id => id !== eachQ.questionID);
+      this.selected = this.selected.filter(id => id !== eachQ.questionId);
     }
     console.log('目前已勾選的題目:', this.selected);
-    console.log(this.questionList);
+    console.log(this.questionVoList);
   }
                 /*--------------------------------------------------------------*/
   @ViewChild('editArea') editArea!: ElementRef;
@@ -376,14 +403,15 @@ export class QuestionListManageComponent {
   question!:string;
   type!:string;
   required!:any;
-  options:any[]=[];  // 新增用
+  optionsList: { code?: number; optionName: string }[] =[];  // 新增用
+
   addQuestion(){
     this.editingQuestion=[];
     // 清空暫存欄位
     this.question = '';
     this.type = '';
     this.required = false;
-    this.options = [];
+    this.optionsList = [];
   }
 
   isNewMode(): boolean {
@@ -395,8 +423,8 @@ export class QuestionListManageComponent {
 
   // 編輯題目
   edit(Qid:number) {
-    for(let i of this.questionList){
-      if(i.questionID==Qid){
+    for(let i of this.questionVoList){
+      if(i.questionId==Qid){
         this.editingQuestion = { ...i };
       }
     }
@@ -407,18 +435,28 @@ export class QuestionListManageComponent {
     });
     this.question = this.editingQuestion.question;
     this.type = this.editingQuestion.type;
-    this.options = [...this.editingQuestion.options];
+    this.optionsList = [...this.editingQuestion.optionsList];
+          console.log(this.optionsList);
+    for(let i of this.editingQuestion.optionsList){
+      console.log(i);
+      console.log(i.optionName);
+    }
   }
   // 新增用
   addOption() {
-    this.options.push('');
+    this.optionsList.push({
+      optionName: ''
+    });
   }
   // 編輯用
   addMoreOption() {
-    if (!this.editingQuestion.options) {
-      this.editingQuestion.options = [];
+    if (!this.editingQuestion.optionsList) {
+      this.editingQuestion.optionsList = [];
     }
-    this.editingQuestion.options.push('');
+    this.editingQuestion.optionsList.push({
+      optionName: ''
+    });
+    console.log(this.editingQuestion.optionsList);
   }
   // 儲存
   save() {
@@ -430,38 +468,40 @@ export class QuestionListManageComponent {
     // 編輯模式
     if (this.isEditMode()) {
       // 找到對應的題目
-      const index = this.questionList.findIndex(q => q.questionID === this.editingQuestion.questionID);
+      const index = this.questionVoList.findIndex(q => q.questionId === this.editingQuestion.questionId);
       if (index !== -1) {
         // 過濾掉空白的選項
-        this.editingQuestion.options = this.editingQuestion.options.filter((opt:any) => opt.trim() !== '');
+        this.editingQuestion.optionsList = this.editingQuestion.optionsList.filter((opt:any) => opt?.optionName?.toString().trim() !== '');
 
         // 更新題目
-        this.questionList[index] = {
-          ...this.questionList[index],
-          question: this.question,
-          type: this.type,
-          required: this.required ?? false,
-          options: [...this.editingQuestion.options]
+        this.questionVoList[index] = {
+          ...this.questionVoList[index],
+          question: this.editingQuestion.question,
+          type: this.editingQuestion.type,
+          required: this.editingQuestion.required ?? false,
+          optionsList: [...this.editingQuestion.optionsList]
         };
-        this.questionList = [...this.questionList];
-        console.log('題目已更新:', this.questionList[index]);
+        this.questionVoList = [...this.questionVoList];
+        console.log('題目已更新:', this.questionVoList[index]);
+        console.log(this.questionVoList);
+        console.log(this.editingQuestion);
       }
     } else {
       // 新增題目
-      const newId = this.questionList.length > 0
-        ? Math.max(...this.questionList.map(q => q.questionID)) + 1
+      const newId = this.questionVoList.length > 0
+        ? Math.max(...this.questionVoList.map(q => q.questionId)) + 1
         : 1;
 
       // 過濾掉空白的選項
-      this.options = this.options.filter((opt:any) => opt.trim() !== '');
+      this.optionsList = this.optionsList.filter((opt:any) => opt?.optionName?.trim() !== '');
       const newQuestion = {
-        questionID: newId,
+        questionId: newId,
         question: this.question,
         type: this.type,
         required: this.required ?? false,
-        options: this.options || []
+        optionsList: this.optionsList || []
       };
-      this.questionList.push(newQuestion);
+      this.questionVoList.push(newQuestion);
     }
 
     this.editingQuestion = null;
@@ -471,13 +511,20 @@ export class QuestionListManageComponent {
   cancelEdit() {
     this.editingQuestion = null;
   }
-  removeOption(index: number) {
-    if(this.isEditMode()){
-      this.editingQuestion.options.splice(index, 1);
+  removeOption(code?:any, index?:number) {
+    console.log(code);
+    if(code){
+      if(this.isEditMode()){
+        this.editingQuestion.optionsList = this.editingQuestion.optionsList.filter((opt:any) => opt.code !== code);
+      }else{
+          this.optionsList = this.optionsList.filter(opt => opt.code !== code);
+      }
     }else{
-      this.options.splice(index,1);
+      this.editingQuestion.optionsList.splice(index, 1);
     }
+    console.log(this.editingQuestion.optionsList);
   }
+
 
   @ViewChild('previewArea') previewArea!: ElementRef;
   Data!:any;
@@ -485,12 +532,23 @@ export class QuestionListManageComponent {
     if(this.editingQuestion){
       if(confirm("要儲存目前編輯題目嗎?")){
         let previewData:QuizCreateReq={
+          quizId: this.quiz?.id || 0,
           title:this.title,
           description:this.description,
           startDate:this.startReturn,
           endDate:this.endReturn,
           published:null as any,
-          questionList:this.questionList
+          questionVoList: this.questionVoList.map((q, i) => ({
+            quizId: this.quiz?.id || 0,
+            questionId: q.questionId || i + 1,
+            question: q.question,
+            type: q.type,
+            required: q.required ?? false,
+            optionsList: q.optionsList.map((opt: {optionName:string}, idx: number) => ({
+              code: idx + 1,
+              optionName: opt.optionName.toString()
+            })) || []
+          }))
         }
         this.editingQuestion=null;
         this.Data=previewData;
@@ -508,12 +566,23 @@ export class QuestionListManageComponent {
       }
     }else{
       let previewData:QuizCreateReq={
+        quizId: this.quiz?.id || 0,
         title:this.title,
         description:this.description,
         startDate:this.startReturn,
         endDate:this.endReturn,
         published:null as any,
-        questionList:this.questionList
+        questionVoList: this.questionVoList.map((q, i) => ({
+          quizId:this.quiz?.id || 0,
+          questionId: q.questionId || i + 1,
+          question: q.question,
+          type: q.type,
+          required: q.required ?? false,
+          optionsList: q.optionsList.map((opt: {optionName:string}, idx: number) => ({
+            code: idx + 1,
+            optionName:opt.optionName
+          })) || []
+        }))
       }
       this.editingQuestion=null;
       this.Data=previewData;
@@ -527,9 +596,9 @@ export class QuestionListManageComponent {
         });
       }
     }
-
+    console.log(this.previewQuestion);
+    console.log(this.Data);
   }
-
 
   formatDate(date: Date): string {
     const d = new Date(date);
@@ -543,79 +612,149 @@ export class QuestionListManageComponent {
     this.previewQuestion=null;
   }
   store(){
-    const questionnaireData:QuestionRes = {
-      questionnaireID: 0, // 或者改成自動生成、或從 route / service 拿
+    const questionnaireData:QuizCreateReq = {
+      quizId: this.quiz?.id || 0,
       title: this.title || "未命名問卷",
-      status: "success",
-      message: `${this.title || '問卷'}資料取得成功`,
-      startTime: this.startDate ? this.formatDate(this.startDate) : '',
-      endTime: this.endDate ? this.formatDate(this.endDate) : '',
-      question_status: false,
-      questionVoList: this.questionList.map((q, i) => ({
-        questionId: q.questionID || i + 1,
+      description: this.description,
+      startDate:this.formatDate(this.Begin),
+      endDate:this.formatDate(this.End),
+      published: false,
+      questionVoList: this.questionVoList.map((q, i) => ({
+        quizId: this.quiz?.id || 0,
+        questionId: q.questionId || i + 1,
         question: q.question,
         type: q.type,
         required: q.required ?? false,
-        options: q.options || []
+        optionsList: q.optionsList.map((opt: {optionName : string}, idx: number) => ({
+          code: idx + 1,
+          optionName: opt.optionName
+        })) || []
       }))
     };
 
-    console.log("準備送出的問卷資料:", questionnaireData);
+    console.log("準備送出的問卷資料:", JSON.stringify(questionnaireData));
 
-    this.service.saveQuestionnaire(questionnaireData).subscribe({
-      next: res => {
-        alert("儲存成功");
-        console.log("伺服器回應:", res);
-        setTimeout(() => {
-          this.previewQuestion = null;
-        }, 100);
-      },
-      error: err => {
-        console.error("儲存失敗:", err);
-        alert("儲存失敗");
-      }
-    });
+    // this.service.saveQuestionnaire(questionnaireData).subscribe({
+    //   next: res => {
+    //     alert("儲存成功");
+    //     console.log("伺服器回應:", res);
+    //     setTimeout(() => {
+    //       this.previewQuestion = null;
+    //     }, 100);
+    //   },
+    //   error: err => {
+    //     console.error("儲存失敗:", err);
+    //     alert("儲存失敗");
+    //   }
+    // });
+    if(questionnaireData.quizId==0){
+      this.http.postApi('http://localhost:8080/quiz/create', questionnaireData).subscribe((res:any)=>{
+        if(res.code === 200) {
+          this.service.refreshQuestionnaires();
+        }
+      });
+    }else{
+      this.http.postApi('http://localhost:8080/quiz/update', questionnaireData).subscribe((res:any)=>{
+        if(res.code === 200) {
+          this.service.refreshQuestionnaires();
+        }
+      });
+    }
+
     this.tell();
     this.All();
     this.closeDialog();
   }
   push(){
     const questionnaireData:QuestionRes = {
-      questionnaireID: 0, // 或者改成自動生成、或從 route / service 拿
+      id: this.quiz?.id || 0,
       title: this.title || "未命名問卷",
-      status: "success",
-      message: `${this.title || '問卷'}資料取得成功`,
-      startTime: this.startDate ? this.formatDate(this.startDate) : '',
-      endTime: this.endDate ? this.formatDate(this.endDate) : '',
-      question_status: true,
-      questionVoList: this.questionList.map((q, i) => ({
-        questionId: q.questionID || i + 1,
+      description: this.description,
+      startDate: this.formatDate(this.Begin),
+      endDate:this.formatDate(this.End),
+      published: true,
+      questionVoList: this.questionVoList.map((q, i) => ({
+        quizId: this.quiz?.id || 0,
+        questionId: q.questionId || i + 1,
         question: q.question,
         type: q.type,
         required: q.required ?? false,
-        options: q.options || []
+        optionsList: q.optionsList.map((opt: {optionName : string}, idx: number) => ({
+          code: idx + 1,
+          optionName: opt.optionName
+        })) || []
       }))
     };
 
     console.log("準備送出的問卷資料:", questionnaireData);
 
-    this.service.saveQuestionnaire(questionnaireData).subscribe({
-      next: res => {
-        alert("儲存成功");
-        console.log("伺服器回應:", res);
-        setTimeout(() => {
-          this.previewQuestion = null;
-        }, 100);
-      },
-      error: err => {
-        console.error("儲存失敗:", err);
-        alert("儲存失敗");
-      }
-    });
-    console.log("成功");
+    // this.service.saveQuestionnaire(questionnaireData).subscribe({
+    //   next: res => {
+    //     alert("儲存成功");
+    //     console.log("伺服器回應:", res);
+    //     setTimeout(() => {
+    //       this.previewQuestion = null;
+    //     }, 100);
+    //   },
+    //   error: err => {
+    //     console.error("儲存失敗:", err);
+    //     alert("儲存失敗");
+    //   }
+    // });
+    if(questionnaireData.id==0){
+      this.http.postApi('http://localhost:8080/quiz/create', questionnaireData).subscribe((res:any)=>{
+        if(res.code === 200) {
+          this.service.refreshQuestionnaires();
+        }
+      });
+    }else{
+      console.log("更新問卷資料:", questionnaireData);
+      this.http.postApi('http://localhost:8080/quiz/update', questionnaireData).subscribe((res:any)=>{
+        if(res.code === 200) {
+          this.service.refreshQuestionnaires();
+        }
+      });
+    }
     this.tell();
     this.All();
     this.closeDialog();
+
+  }
+                /*--------------------------------------------------------------*/
+  @ViewChild('reviseDialog') reviseDialog!: ElementRef<HTMLDialogElement>;
+  quiz:any;
+  revise(id:any){
+    this.reviseDialog.nativeElement.showModal();
+    this.http.getApi('http://localhost:8080/quiz/get_quiz?id='+id).subscribe((res:any)=>{
+      this.quiz=res.quiz;
+      this.title=this.quiz.title;
+      this.description=this.quiz.description;
+      this.startDate=this.quiz.startDate;
+      this.endDate=this.quiz.endDate;
+    });
+    this.http.getApi('http://localhost:8080/quiz/get_questions?quizId='+id).subscribe((res:any)=>{
+      this.questionVoList=res.questionVoList;
+      this.optionsList = (res.optionsList ?? []).map((o: any) => ({
+        code: o.code,
+        optionName: String(
+          typeof o.optionName === 'object'
+            ? o.optionName.optionName
+            : o.optionName
+        )
+      }));
+    });
+  }
+  reviseCancel(){
+    if(this.title==this.quiz.title
+      && this.description==this.quiz.description
+      && this.startDate==this.quiz.startDate
+      && this.endDate==this.quiz.endDate){
+        this.closeDialog();
+    }else{
+      if(confirm('確定?')){
+        this.closeDialog();
+      }
+    }
   }
 /*--------------------------------------------------------------*/
   // goToAns(qId:number){

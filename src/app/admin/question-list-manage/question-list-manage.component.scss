@@ -8,6 +8,20 @@
             hue-rotate(0deg)    // 色相旋轉  旋轉顏色（藍變橘、紅變青等）
 }
 
+textarea {
+  field-sizing: content; /* 讓大小隨內容變動 */
+  min-height: 50px;      /* 設定最小高度 */
+  max-height: 300px;     /* 可選：設定最大高度避免無限拉長 */
+}
+.edit-input {
+  width: 500px;
+  border-radius: 5px;
+  font-size: 18px;      /* 調整字體大小 */
+  padding: 8px;         /* 增加內邊距讓文字不擁擠 */
+  border: 1px solid #ccc;
+  font-family: 'LXGW WenKai TC', monospace;
+}
+
 tr{
   height:50px;
 }
@@ -199,4 +213,87 @@ dialog{
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.info{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.infoInput{
+  width:300px;
+  height:30px;
+  margin-bottom: 0px;
+  border-radius: 5px;
+  border: #cccccc 1px solid;
+}
+.Q{
+  margin:20px 0px;
+}
+.option-text {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.question-list{
+  width:100%;
+}
+.question-list li {
+  margin-bottom: 10px;
+  list-style: none;
+  position: relative;
+  padding-left: 40px; /* 左邊空間依圖片大小調整 */
+  counter-increment: q;
+}
+.question-list li.show::before {
+  content: "";
+  position: absolute;
+  left: 0px;
+  top: 2px;
+  width: 20px;          /* 圖片大小 */
+  height: 20px;
+  background-image: url('https://png.pngtree.com/png-clipart/20250108/original/pngtree-cute-cartoon-golden-star-clipart-illustration-png-image_19854636.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+/* 編號（1. 2. 3.）放在圖片後面 */
+.question-list li::after {
+  content: counter(q) ". ";
+  position: absolute;
+  left: 25px;           /* 圖片寬度稍後 */
+  top: 0;
+  font-weight: bold;
+}
+
+
+.requiredCheckbox{
+  /* 取消瀏覽器預設樣式 */
+  -webkit-appearance: none;
+  appearance: none;
+
+  /* 自定義樣式 */
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 7px;
+  background-color: #fff;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+}
+/* 選中時的樣式 */
+.requiredCheckbox:checked {
+  background-color: #f0ad4e; /* 你的橘色主題 */
+  border-color: #f0ad4e;
+}
+/* 選中時內部的打勾圖案（選配） */
+.requiredCheckbox:checked::after {
+  content: '✔';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
 }

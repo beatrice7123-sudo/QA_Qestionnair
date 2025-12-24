@@ -48,10 +48,10 @@ export class AppComponent {
     this.router.events.subscribe(()=>{
       if(this.router.url.includes('/user')){
         this.routerTell="user";
-        this.isAdmin=false;
+        this.checkPass=false;
       }else if(this.router.url.includes('/admin')){
         this.routerTell="admin";
-        this.isAdmin=true;
+        this.checkPass=true;
       }
     });
 
@@ -105,6 +105,8 @@ export class AppComponent {
   birthDate:any;
   gender:any;
   infoEdit(){
+    this.isAdmin=false;
+    this.doubleCheck=false;
     this.forCancelReset={...this.nowUser};  // 備份取消用
     this.name=this.nowUser.name;
     this.phone=this.nowUser.phone;
@@ -127,11 +129,32 @@ export class AppComponent {
     this.isOpenEdit=false;
   }
 
+  doubleCheck:boolean=false;
+  checkPass:boolean=false;
   chooseMode(adminMode:boolean){
     if(!adminMode){
+      this.doubleCheck=false;
+      this.checkPass=false;
       this.goToUser();
     }else{
-      this.goToAdmin();
+      this.doubleCheck=true;
+    }
+  }
+  password!:string;
+  PasswordCheck(){
+    for(let i of this.service.sampleLogins){
+      if(this.nowUser.email==i.email){
+        if(this.password==i.password){
+          this.checkPass=true;
+          this.goToAdmin();
+          setTimeout(()=>{
+            this.password="";
+            this.doubleCheck=false;
+          },1000);
+        }else{
+          alert("密碼錯誤");
+        }
+      }
     }
   }
   goToUser(){

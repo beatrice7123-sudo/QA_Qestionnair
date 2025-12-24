@@ -8,30 +8,51 @@
               height:fit-content;background-color: aliceblue;
               display: flex;flex-direction: column;margin: 100px;
               justify-content: center;align-items: center;">
-    <p style="justify-content: end;margin-left:700px;margin-top: 50px;">{{questionnaire.startTime}}~{{questionnaire.endTime}}</p>
-    <h1 style="justify-content: center;">{{questionnaire.title}}</h1>
-    <p style="margin-bottom: 30px;">{{questionnaire.message}}</p>
+    <p style="justify-content: end;margin-left:700px;margin-top: 50px;">{{quiz?.startDate}}~{{quiz?.endDate}}</p>
+    <h1 style="justify-content: center;">{{quiz?.title}}</h1>
+    <p style="margin:30px 100px;">{{quiz?.description}}</p>
 
-    <div style="justify-content: center;align-items: center;
-                width:500px;">
-      <div style="display: flex;flex-direction: column;justify-content: baseline;
-                  align-items: baseline;margin-left: 100px;">
-        <label class="info">姓名 ：{{name}}</label><br>
-        <label class="info">手機 ：{{phone}}</label><br>
-        <label class="info">Email：{{email}}</label><br>
-        <label class="info">年齡 ：{{age}}</label><br>
+    <div>
+      <div style="display: flex;flex-direction: column;justify-content: center;
+                  align-items: center;">
+        <table class="info">
+          <tr>
+            <td>姓名 ：{{name}}</td>
+            <td>手機 ：{{phone}}</td>
+          </tr>
+          <tr>
+            <td>Email：{{email}}</td>
+            <td>年齡 ：{{age}}</td>
+          </tr>
+        </table>
       </div>
       <div style="display: flex; flex-direction: column;justify-content: center;
                   align-items: center;">
         <ol>
-          @for(ansID of this.answer;track $index){
-            @for(quesID of questionnaire.questionVoList;track $index){
-              @if(ansID[0]==quesID.questionId){
-                  <li style="width:300px;">{{quesID.question}}</li>
-                  <div style="width:300px;height:fit-content;word-break: break-all; overflow-wrap: break-word;">
-                    <p class="A">{{ansID[1]}}</p>
-                  </div>
-
+          @for(ans of this.answer;track $index){
+            @for(quesID of questionnaire;track $index){
+              @if(ans.questionId==quesID.questionId){
+                <li>
+                  <tr>
+                    <td style="word-wrap: break-word; overflow-wrap: break-word;">{{quesID.question}}</td>
+                    <td style="word-wrap: break-word; overflow-wrap: break-word;">
+                      <span style="width:350px;height:fit-content;word-break: break-all; overflow-wrap: break-word;">
+                        @if(quesID.type=="single" || quesID.type=="multiple"){
+                          @for(choice of quesID.optionsList;track $index){
+                            @for(opt of ans.answerVoList;track $index){
+                              @if(opt.code==choice.code){
+                                <span class="A">{{choice.optionName}}　</span>
+                              }
+                            }
+                          }
+                        }
+                        @else if (quesID.type=="text") {
+                            <span class="A">{{ans.answerVoList[0].optionName}}</span>
+                        }
+                      </span>
+                    </td>
+                  </tr>
+                </li>
               }
             }
           }
