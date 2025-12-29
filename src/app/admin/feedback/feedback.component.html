@@ -11,10 +11,10 @@
         <button class="tab-btn" [class.active]="activeTab==='tab2'" (click)="onTabChange('tab2')">統計</button>
       </div>
       @if (activeTab === 'tab1') {
-        @if(userList){
+        @if(fillinUser){
           <div #userRecArea class="userRec-section">
             <label style="width:100%;">
-              <h4 style="margin-left:50px;color: #fff8e4;;">填寫紀錄</h4>
+              <p style="margin-left:50px;color: #fff8e4; font-weight: 500;">填寫紀錄</p>
             </label>
             <table style="width:100%; border-spacing: 0px;overflow: hidden;border-radius: 15px;
                       border-style: none; border-radius: 10px;">
@@ -23,13 +23,11 @@
                 <th style="width:33%;padding: 8px;">填寫時間</th>
               </thead>
               <tbody style="text-align: center;background-color: #ffeec1">
-                @for(u of userList;track $index){
-                  @for(user of u.userVoList;track $index){
-                    <tr (click)="lookAns(u.quizId,user.name)" style="cursor: pointer;" class="btn">
-                      <td>{{user.name}}</td>
-                      <td>{{user.fillinDate}}</td>
-                    </tr>
-                  }
+                @for(user of fillinUser;track $index){
+                  <tr (click)="lookAns(user.email)" style="cursor: pointer;" class="btn">
+                    <td>{{user.name}}</td>
+                    <td>{{user.fillinDate}}</td>
+                  </tr>
                 }
               </tbody>
             </table>
@@ -46,29 +44,80 @@
                         justify-content: center;align-items: center;">
               <label style="width: 100%;">
                 <p style="margin-left: 60%;margin-top: 50px;font-size: 20px;">
-                  {{question.startTime}}~{{question.endTime}}</p>
+                  {{quiz?.startDate}}~{{quiz?.endDate}}</p>
               </label>
-              <h1 style="justify-content: center;">{{question.title}}</h1>
-              <p style="margin-bottom: 30px;">{{question.message}}</p>
+              <h1 style="justify-content: center;">{{quiz?.title}}</h1>
+              <p style="margin:30px 100px;">{{quiz?.description}}</p>
 
               <div style="justify-content: center;align-items: center;
-                          width:500px;">
-                <div style="display: flex;flex-direction: column;justify-content: baseline;
+                          width:700px;">
+                <!-- <div style="display: flex;flex-direction: column;justify-content: baseline;
                             align-items: baseline;margin-left: 100px;">
-                  <label class="info">姓名 ：{{showAns.ans.name}}</label><br>
-                  <label class="info">手機 ：{{showAns.ans.phone}}</label><br>
-                  <label class="info">Email：{{showAns.ans.email}}</label><br>
-                  <label class="info">年齡 ：{{showAns.ans.age}}</label><br>
+                  <label class="info">姓名 ：</label><br>
+                  <label class="info">手機 ：</label><br>
+                  <label class="info">Email：</label><br>
+                  <label class="info">年齡 ：</label><br>
+                </div> -->
+                <div style="display: flex;flex-direction: column;justify-content: center;
+                            align-items: center;">
+                  <table class="info">
+                    <tr>
+                      <td>姓名 ：{{showAns.name}}</td>
+                      <td>手機 ：{{showAns.phone}}</td>
+                    </tr>
+                    <tr>
+                      <td>Email：{{showAns.email}}</td>
+                      <td>年齡 ：{{showAns.age}}</td>
+                    </tr>
+                  </table>
                 </div>
                 <div style="display: flex; flex-direction: column;justify-content: center;
-                            align-items: center;">
+                  align-items: center;width:100%;">
                   <ol>
-                    @for(item of question.questionVoList;track $index){
-                      <li>{{item.question}}</li>
-                      <p>{{showAns.ans.answers[item.questionId]}}</p>
+                    @for(item of question;track $index){
+                      @for(ans of showAns.answers;track $index){
+                        @if(ans.questionId==item.questionId){
+                          <li>
+                            <tr>
+                              <td class="record" style="word-wrap: break-word; overflow-wrap: break-word;">{{item.question}}</td>
+                              <td class="record" style="word-wrap: break-word; overflow-wrap: break-word;">
+                                <span style="width:350px;height:fit-content;word-break: break-all; overflow-wrap: break-word;">
+                                  @if(item.type=="single" || item.type=="multiple"){
+                                    @for(choice of item.optionsList;track $index){
+                                      @for(opt of ans.answerVoList;track $index){
+                                        @if(opt.code==choice.code){
+                                          <span class="A">{{choice?.optionName}}　</span>
+                                        }
+                                      }
+                                    }
+                                  }
+                                  @else if (item.type=="text") {
+                                      <span class="A">{{ans.answerVoList[0]?.optionName}}</span>
+                                  }
+                                </span>
+                              </td>
+                            </tr>
+                          </li>
+                        }
+                      }
                     }
                   </ol>
                 </div>
+                <!-- <div style="display: flex; flex-direction: column;justify-content: center;
+                            align-items: center;">
+                  <ol>
+                    @for(item of question;track $index){
+                      <li>{{item.question}}</li>
+                      @for(ans of showAns.answers;track $index){
+                        @if(item.questionId==ans.questionId){
+                          @for(optionName of ans.answerVoList;track $index){
+                            <p>{{optionName.optionName}}</p>
+                          }
+                        }
+                      }
+                    }
+                  </ol>
+                </div> -->
               </div>
             </div>
           </div>
@@ -83,14 +132,14 @@
               <div style="display: flex;flex-direction: column;align-items: center;">
                 <label style="width:100%;margin-top:5%;display:flex;flex-direction: row;justify-content: space-between;padding:10px;">
                   <span style="margin-left: 5%;">填表人數：{{total}}</span>
-                  <span style="margin-right:5%">開放期間：{{newQdata.startTime}}~{{newQdata.endTime}}</span>
+                  <span style="margin-right:5%">開放期間：{{quiz?.startDate}}~{{quiz?.endDate}}</span>
                 </label>
-                <h1>{{newQdata.title}}</h1>
-                <p>{{newQdata.message}}</p>
+                <h1>{{quiz?.title}}</h1>
+                <p style="margin:30px 100px;">{{quiz?.description}}</p>
               </div>
               <div style="width: 100%;height:fit-content;margin-bottom: 10%;">
                 <ol style="display: flex; flex-direction:column;justify-content: center;padding:0px;margin:10px;">
-                    @for(item of newQdata.questionVoList; track $index){
+                    @for(item of question; track $index){
                       <div style="display: flex; flex-direction: column;
                                   justify-content: center; align-items: center;
                                   width: 100%;">
@@ -104,7 +153,11 @@
                         </div>
                         @if(item.type == "single" || item.type == "multiple"){
                           <div style="width: 100%;height:500px;display: flex;justify-content: center;">
-                            <canvas style="margin-left: 150px;width:60%;" id="chart-{{ item.questionId }}"></canvas>
+                            @if(total==0){
+                              <p style="height:fit-content; position:relative; top:45%; margin: 0px;">暫無資料</p>
+                            }@else {
+                              <canvas style="margin-left: 150px;width:60%;" id="chart-{{ item.questionId }}"></canvas>
+                            }
                           </div>
                         }@else{
                           <label style="background-color: #fff8e4;
@@ -116,13 +169,17 @@
                           <div class="scroll-container" style="margin-top:0;">
                             <table style="width: 100%; border-spacing: 0; border-collapse: collapse;
                                           word-break: break-all; overflow-wrap: break-word;">
-                              @for(string of this.text; track $index){
-                                <tr>
-                                  <td style="display: flex; flex-direction: column; margin:5px 0px;
-                                            justify-content: center; align-items: center; border-bottom: 1px solid lightgrey;">
-                                    {{ string }}
-                                  </td>
-                                </tr>
+                              @if(total==0){
+                                <p style="text-align: center;">暫無回應</p>
+                              }@else {
+                                @for(string of this.text; track $index){
+                                  <tr>
+                                    <td style="display: flex; flex-direction: column; margin:5px 0px;
+                                              justify-content: center; align-items: center; border-bottom: 1px solid lightgrey;">
+                                      {{ string }}
+                                    </td>
+                                  </tr>
+                                }
                               }
                             </table>
                           </div>

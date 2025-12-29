@@ -41,13 +41,13 @@
                           @for(choice of quesID.optionsList;track $index){
                             @for(opt of ans.answerVoList;track $index){
                               @if(opt.code==choice.code){
-                                <span class="A">{{choice.optionName}}　</span>
+                                <span class="A">{{choice?.optionName}}　</span>
                               }
                             }
                           }
                         }
                         @else if (quesID.type=="text") {
-                            <span class="A">{{ans.answerVoList[0].optionName}}</span>
+                            <span class="A">{{ans.answerVoList[0]?.optionName}}</span>
                         }
                       </span>
                     </td>

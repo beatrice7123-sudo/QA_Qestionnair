@@ -5,7 +5,7 @@
       <div class="blob2 blob-bg"></div>
       <svg viewBox="0 0 1100 900" class="lines">
         <g transform="scale(0.78) translate(-150, -10)">
-          <path
+          <!-- <path
             d="M240,700
                 C120,420 400,120 700,180  C950,220 1150,100 1350,280
                 C1500,420 1550,700 1450,850  C1320,980 1150,1050 900,1020
@@ -13,14 +13,14 @@
                 C260,760 250,740 240,700 Z"
             fill="none"
             stroke="black"
-            stroke-width="5">
+            stroke-width="5"> -->
             <!-- d：曲線路徑 => Ｍ：Move to 起點座標 Ｃ：Cubic Bézier curve(貝茲曲線)
                     每組都有三個控制點：
                       。控制點1：決定曲線起點的「彎曲方向」
                       。控制點2：決定曲線終點的「彎曲方向」
                       。終點 ：曲線結束的位置
                 Ｚ：封閉線條 stroke：線條顏色 fill：填滿 -->
-          </path>
+          <!-- </path> -->
         </g>
       </svg>
     </div>
@@ -29,6 +29,66 @@
       <label>帳號：<input type="text" placeholder="請輸入電子郵件" [(ngModel)]="email"></label>
       <label>密碼：<input type="password" placeholder="請輸入密碼" [(ngModel)]="password"></label>
       <button (click)="login()">登入</button>
+      <p (click)="register()">註冊</p>
     </div>
+    <dialog #loginDialog class="alertDialog">登入失敗，請確認帳號密碼</dialog>
+
+    <dialog #registerDialog class="registerDialog">
+      <div (click)="closeDialog()" style="justify-self:flex-end;margin-right:20px;cursor: pointer;">✕</div>
+      <h3 style="position: absolute;top:10px;left:40%;">註冊資料</h3>
+        <div style="display: flex;justify-content: center;align-items: center;top:23%; width:90%;position: absolute;">
+          <table style="width:80%;">
+            <tr>
+              <td>姓名：</td>
+              <td class="inputTd"><input type="text" placeholder="請輸入姓名" [(ngModel)]="name" class="tableInput"></td></tr>
+            <tr>
+              <td>生日：</td>
+              <td class="inputTd"><input type="date" class="dateInput" [(ngModel)]="birthDate" class="tableInput"></td></tr>
+            <tr>
+              <td>姓別：</td>
+              <td class="inputTd">
+                <div style="display:flex; gap:30px; align-items:center;justify-content: center;">
+                  <label><input type="radio" name="gender" value="male" [(ngModel)]="gender">男性</label>
+                  <label><input type="radio" name="gender" value="female" [(ngModel)]="gender">女性</label>
+                  <label><input type="radio" name="gender" value="other" [(ngModel)]="gender">不提供</label>
+                </div>
+              </td></tr>
+            <tr>
+              <td>電話：</td>
+              <td class="inputTd"><input type="text" placeholder="請輸入臺灣手機號碼" [(ngModel)]="phone" class="tableInput"></td></tr>
+            <tr>
+              <td>電子郵件：</td>
+              <td class="inputTd"><input type="text" placeholder="請輸入Email" [(ngModel)]="newEmail" class="tableInput"></td></tr>
+            <tr>
+              <td>密碼：</td>
+              <td class="inputTd"><input type="password" placeholder="8至16碼，須包含特殊符號!@#$%^&*?_" [(ngModel)]="newPassword" class="tableInput"></td></tr>
+            <tr>
+              <td>管理員身分：</td>
+              <td class="inputTd">
+                <div style="display:flex; gap:50px; align-items:center;justify-content: center;">
+                  <label><input type="radio" name="admin" [value]="true" (change)="admin = true">需要</label>
+                  <label><input type="radio" name="admin" [value]="false" (change)="admin = false">不需要</label>
+                </div>
+              </td></tr>
+          </table>
+        </div>
+        <button (click)="save()" class="sendBtn">送出</button>
+    </dialog>
+
+    <dialog #alertDialog class="alertDialog">還有欄位未完成</dialog>
+    <dialog #checkDialog class="alertDialog">
+      <div style="width: 80%; display: flex;flex-direction: column;">
+        <label>再次輸入密碼確認：</label>
+        <label><input type="password" placeholder="請再次輸入密碼" [(ngModel)]="recheck" class="tableInput" style="width:100%;"></label>
+        <div style="display: flex;flex-direction: row;justify-content: space-evenly;margin-top: 20px;">
+          <button (click)="closeCheck()" class="checkBtn">返回修改</button>
+          <button (click)="check()" class="checkBtn">確認儲存</button>
+        </div>
+      </div>
+
+    </dialog>
+    <dialog #passwordErrorDialog class="alertDialog">密碼和註冊資料密碼不符</dialog>
+    <dialog #successDialog class="alertDialog">註冊成功，請重新登入</dialog>
+    <dialog #errorDialog class="alertDialog">資料格式錯誤</dialog>
   </div>
 </div>

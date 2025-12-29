@@ -4,6 +4,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 20px;
 }
 
 .container {
@@ -31,7 +32,7 @@
   position: absolute;
   width: 1100px;
   height: 900px;
-  background-color: #ffe2a9e9;
+  background-color: #ffebc3e9;
   animation: flow1 20s ease infinite;
   // 套用下方的flow動畫
   // 動畫 勻速
@@ -76,17 +77,20 @@
   max-width: 400px;
   width: 80vw;
   max-height: 300px;
-  height: auto;
+  height: 30vh;
+  font-size: 18px;
 }
 
 
 .login-box input {
+  font-size: 17px;
   border: 1px solid lightgray;
   border-radius: 6px;
   padding: 6px 8px;
 }
 
 .login-box button {
+  font-size: 14px;
   background-color: #b5d8ff;
   border: none;
   border-radius: 8px;
@@ -121,4 +125,87 @@
     border-radius: 35% 55% 60% 40% / 45% 35% 55% 45%;
     transform: translate(-3vw, 2vh) rotate(-12deg);
   }
+}
+
+p{
+  position: absolute;
+  bottom:40px;
+  text-align: center;
+  font-size: 13px;
+  margin: 0px;
+  cursor: pointer;
+}
+p:hover{
+  font-size: 18px;
+  color: #6cacff;
+}
+.registerDialog{
+  width:50%;
+  height:50%;
+  background-color: rgba(225, 241, 255);
+  border-radius: 15px;
+}
+.alertDialog{
+  width:30%;
+  height:20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+}
+
+td{
+  text-align: center;
+  padding: 0px;
+}
+.inputTd{
+  width:70%;
+}
+.tableInput{
+  width:80%;
+  height:25px;
+}
+.dateInput{
+  width:200px;
+  height:25px;
+  border-radius: 5px;
+  margin:0px 10px;
+  text-align: center;
+  font-size: 18px;
+  background-color: rgba(120, 180, 255, 0.25);
+  border:none;
+  color: rgba(42, 136, 250, 0.721);
+}
+::-webkit-calendar-picker-indicator {
+    filter: invert(1)           // 顏色反轉  黑 → 白、白 → 黑
+            brightness(50%)     // 調整亮度  50% 代表變暗一半
+            sepia(50%)         // 奶茶色濾鏡  將顏色轉成棕黃色基底
+            saturate(1000%)      // 飽和度提升  讓顏色變超鮮豔（強化色彩）
+            hue-rotate(180deg)    // 色相旋轉  旋轉顏色（藍變橘、紅變青等）
+}
+.sendBtn{
+  position: absolute;
+  bottom: 30px;
+  right:20%;
+  background-color: #b5d8ff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.sendBtn:hover {
+  background-color: #9fc9ff;
+}
+
+.checkBtn{
+  background-color: #b5d8ff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.checkBtn:hover {
+  background-color: #9fc9ff;
 }

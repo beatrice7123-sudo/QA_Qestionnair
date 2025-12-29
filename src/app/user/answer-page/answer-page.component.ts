@@ -20,8 +20,7 @@ export class AnswerPageComponent {
     private http:HttpServiceService
   ) { }
 
-  userId!:number;  // 網址用
-  // qId!:number;  // 網址用
+
   quizId!:number;  // 儲存傳來的id
   eachQuiz!:any;  //儲存問卷資訊
   eachQuestionnaireData!:any;  // 儲存id相對的問題資訊
@@ -32,8 +31,6 @@ export class AnswerPageComponent {
   Answer: { [questionId: number]: QuestionAnswer } = {};
 
   ngOnInit(): void {
-    this.userId=Number(this.route.snapshot.paramMap.get('userId'));
-    // this.qId=Number(this.route.snapshot.paramMap.get('qId'));
     this.quizId=Number(this.route.snapshot.paramMap.get('qId'));
 
     this.http.getApi('http://localhost:8080/quiz/get_quiz?id='+this.quizId).subscribe((res:any)=>{
@@ -77,8 +74,28 @@ export class AnswerPageComponent {
           this.Answer = saved.answers || {};
         }
       }
+
+      this.userName=this.service.getUserInfo().name;
+      this.userPhone=this.service.getUserInfo().phone;
+      this.userEmail=this.service.getUserInfo().email;
+      this.userAge=this.calculateAge(this.service.getUserInfo().birthDate);
+      console.log(this.userAge);
     });
   }
+  calculateAge(birthDate: string | Date): number {
+    const today = new Date();
+    const birth = new Date(birthDate);
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    // 如果今年還沒過生日，年齡要減 1
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
   // 單選
   selectedSingle(questionId:number, option:any){
     this.Answer[questionId].answerVoList = [
@@ -151,7 +168,7 @@ export class AnswerPageComponent {
 
     // 導到預覽頁
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['/user/preview', this.userId, this.quizId]);
+      this.router.navigate(['/user/preview/', this.quizId]);
     });
   }
   RequiredAlert:boolean=false;
@@ -190,7 +207,7 @@ export class AnswerPageComponent {
     if(confirm("確定?!!!!")){
       this.service.clearPreviewData();
       this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-        this.router.navigate(['/user/question-list/'+this.userId]);
+        this.router.navigate(['/user/question-list']);
       });
     }
   }

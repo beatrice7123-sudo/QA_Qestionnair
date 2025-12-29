@@ -10,11 +10,11 @@ import { FeedbackComponent } from './admin/feedback/feedback.component';
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' }, // 預設一開始就是 login
   { path: 'login', component: LoginComponent },
-  { path: 'user/question-list/:userId', component:QuestionListComponent },
-  { path:'user/answer-page/:userId/:qId', component:AnswerPageComponent },
-  { path:'user/preview/:userId/:qId', component:PreviewComponent },
-  { path:'user/counting/:userId/:qId', component:CountingComponent },
-  { path: 'admin/question-list-manage/:userId', component:QuestionListManageComponent },
+  { path: 'user/question-list', component:QuestionListComponent },
+  { path:'user/answer-page/:qId', component:AnswerPageComponent },
+  { path:'user/preview/:qId', component:PreviewComponent },
+  { path:'user/counting/:qId', component:CountingComponent },
+  { path: 'admin/question-list-manage', component:QuestionListManageComponent },
   { path: 'admin/feedback/:qId', component:FeedbackComponent },
   { path: '**', redirectTo: '/login', pathMatch: 'full' }
 ];

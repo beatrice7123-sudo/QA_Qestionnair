@@ -59,26 +59,21 @@ export class PreviewComponent {
     const back = this.service.getPreviewData(); // 或用 this.previewData
     console.log(back)
     // 這裡直接回去 answer-page
-    this.router.navigate(['/user/answer-page',this.userId, back.id]);
+    this.router.navigate(['/user/answer-page/', back.id]);
   }
   goTo(qId:number){
     // this.userId、this.questionnaire存DB;
     const data = this.service.getPreviewData();
     console.log('送出結果:', JSON.stringify(data));
-    // alert('儲存成功！');
-    // this.service.countingData(this.userId, data);
     this.http.postApi('http://localhost:8080/quiz/fillin', data).subscribe((res:any)=>{
       if(res.code === 200) {
         this.service.clearPreviewData();
       }
     });
-    // setTimeout(() => {
-    //   this.service.clearPreviewData(); // 清除暫存
-    // },100);
 
 
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['/user/counting/',this.userId,this.qId]);
+      this.router.navigate(['/user/counting/',this.qId]);
     });
   }
 }

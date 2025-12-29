@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { QuestionRes, ServiceService } from '../../@service/service.service';
 import { ActivatedRoute } from '@angular/router';
 import Chart from 'chart.js/auto';
+import { HttpServiceService } from '../../@service/http-service.service';
 
 @Component({
   selector: 'app-feedback',
@@ -13,18 +14,21 @@ export class FeedbackComponent {
   constructor(
     private service:ServiceService,
     private route:ActivatedRoute,
+    private http:HttpServiceService
   ){}
   activeTab: string = 'tab1';
   originalData:any;
   dataSource:any[]=[];
-  qId!:number;
+  id!:number;
 
+  fillinUser:any[]=[];
 
   fillinList:any[]=[];
   feedbackList:any[]=[];
   showAns:any | null=null;
   userList:any | null=null;
 
+  quiz!:any;
   total!:number;
   newQdata:any={};
   forCount:any;
@@ -34,52 +38,71 @@ export class FeedbackComponent {
   Result:[number, { [questionId:string] : { [option: string] : number }  }] [] = [];  // 儲存合併統計結果
 
   ngOnInit(): void {
-    this.qId=Number(this.route.snapshot.paramMap.get('qId'));
     this.total=0;
 
-    this.service.getAllQuestionnaires().subscribe(data=>{
-      this.originalData=data;
-    });
-    // 原時間資料判斷
-    let begin!:Date;
-    let end!:Date;
-    for(let eachOne of this.originalData){
-      begin=new Date(eachOne.startTime);
-      end=new Date(eachOne.endTime);
-      begin.setHours(0,0,0,0);
-      end.setHours(23, 59, 59, 999);
-      if(new Date().getTime() < begin.getTime()){
-        eachOne.status=1;  // 未開始
-      }else{
-        if(new Date().getTime() <= end.getTime()){
-          eachOne.status=2;  // 進行中
-        }else{
-          eachOne.status=3;  // 已結束
-        }
-      }
-    }
-    for(let Q of this.originalData){  // 判斷是否發布
-      if(Q.question_status==true){
-        if(Q.status==2 || Q.status==3){
-          this.dataSource.push(Q);
-        }
-      }
-    }
-    // console.log(this.dataSource);
-    this.fillinList=JSON.parse(localStorage.getItem('forCount') || '[]');  // localStorage
-    this.showAns=null;
-    this.feedbackList=this.service.feedbackList;
-    console.log(this.feedbackList);
+    this.id=Number(this.route.snapshot.paramMap.get('qId'));
+    this.http.getApi('http://localhost:8080/quiz/fillin_user?id='+this.id).subscribe((res:any) => {
+      this.fillinUser=res.fillinUser;
+    })
+    this.http.getApi('http://localhost:8080/quiz/feedback_list?id='+this.id).subscribe((res:any) => {
+      this.fillinList=res.feedbackList;
+    })
 
-    this.userList=null;
-    this.dataLength=this.dataSource.length;
-    this.paginator(this.dataSource);
-   /*--------------------------------------------------------------*/
-    // tab2
-    // 還原資料
-    this.forCount = JSON.parse(localStorage.getItem('forCount') || '[]');
-    console.log(this.forCount);
-    this.showUser(this.qId);
+    this.http.getApi('http://localhost:8080/quiz/get_quiz?id='+this.id).subscribe((res:any)=>{     // 全部問卷
+      this.quiz=res.quiz;
+    })
+    this.http.getApi('http://localhost:8080/quiz/get_questions?quizId='+this.id).subscribe((res:any)=>{     // 全部問卷
+      this.question=res.questionVoList;
+    })
+    this.http.getApi('http://localhost:8080/quiz/statistics?id='+this.id).subscribe((res:any) => {
+      this.countingData=res.statisticsList;
+      this.total=res.fillinTotal;
+      this.http.getApi('http://localhost:8080/quiz/text_ans?id='+this.id).subscribe((res:any) => {
+        this.text=res.textAns;
+        setTimeout(() => this.renderCharts(), 500);
+      })
+    })
+
+  //// 原時間資料判斷
+  //   let begin!:Date;
+  //   let end!:Date;
+  //   for(let eachOne of this.originalData){
+  //     begin=new Date(eachOne.startTime);
+  //     end=new Date(eachOne.endTime);
+  //     begin.setHours(0,0,0,0);
+  //     end.setHours(23, 59, 59, 999);
+  //     if(new Date().getTime() < begin.getTime()){
+  //       eachOne.status=1;  // 未開始
+  //     }else{
+  //       if(new Date().getTime() <= end.getTime()){
+  //         eachOne.status=2;  // 進行中
+  //       }else{
+  //         eachOne.status=3;  // 已結束
+  //       }
+  //     }
+  //   }
+  //   for(let Q of this.originalData){  // 判斷是否發布
+  //     if(Q.question_status==true){
+  //       if(Q.status==2 || Q.status==3){
+  //         this.dataSource.push(Q);
+  //       }
+  //     }
+  //   }
+  //   // console.log(this.dataSource);
+  //   this.fillinList=JSON.parse(localStorage.getItem('forCount') || '[]');  // localStorage
+  //   this.showAns=null;
+  //   this.feedbackList=this.service.feedbackList;
+  //   console.log(this.feedbackList);
+
+  //   this.userList=null;
+  //   this.dataLength=this.dataSource.length;
+  //   this.paginator(this.dataSource);
+  //  /*--------------------------------------------------------------*/
+  //   // tab2
+  //   // 還原資料
+  //   this.forCount = JSON.parse(localStorage.getItem('forCount') || '[]');
+  //   console.log(this.forCount);
+  //   this.showUser(this.id);
  }
 /*--------------------------------------------------------------*/
   // tab1
@@ -220,23 +243,39 @@ export class FeedbackComponent {
     setTimeout(() => this.renderCharts(), 300);
     /*--------------------------------------------------------------*/
   }
+
+  calculateAge(birthDate: string | Date): number {
+    const today = new Date();
+    const birth = new Date(birthDate);
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    // 如果今年還沒過生日，年齡要減 1
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
   @ViewChild('showAnsArea') showAnsArea!: ElementRef;
   question:any;
-  lookAns(quizId:number, name:string){
+  lookAns(email:string){
     this.showAns=[];
     console.log(this.originalData,this.showAns, this.userList, this.fillinList);
     // 取答案
     for(let answers of this.fillinList){
-      if(name==answers.ans.name && quizId==answers.ans.questionnaireID){
+      if(email==answers.email){
         this.showAns=answers;  // 後續需限定只寫一次
+        this.showAns.age=this.calculateAge(answers.birthDate);
       }
     }
     // 取題目
-    for(let questionnaire of this.originalData){
-      if(questionnaire.questionnaireID==this.showAns.ans.questionnaireID){
-        this.question=questionnaire;
-      }
-    }
+    // for(let questionnaire of this.originalData){
+    //   if(questionnaire.questionnaireID==this.showAns.ans.questionnaireID){
+    //     this.question=questionnaire;
+    //   }
+    // }
     console.log(this.showAns, this.question);
   }
 /*--------------------------------------------------------------*/
@@ -248,79 +287,97 @@ export class FeedbackComponent {
     }
   }
 
-
   charts: { [id: string]: Chart } = {}; // 存已建立的圖表
-  renderCharts() {
-    for (let i of this.newQdata.questionVoList) {
-      if (i.type === 'single' || i.type === 'multiple') {
-        const ctx = document.getElementById(`chart-${i.questionId}`) as HTMLCanvasElement;
-        if (!ctx) continue;  // 若還沒渲染則跳過
+    renderCharts() {
+      console.log(this.question);
+      for (let i of this.question) {
+        if (i.type === 'single' || i.type === 'multiple') {
+          const ctx = document.getElementById(`chart-${i.questionId}`) as HTMLCanvasElement;
+          if (!ctx) continue;  // 若還沒渲染則跳過
 
-        const Ans = this.Result.find(r => r[0] === this.newQdata.questionnaireID)?.[1][i.questionId];
-        if (!Ans) continue;
+          const Ans = this.countingData.find((s: any) => s.questionId === i.questionId);
+          if (!Ans) continue;
 
-        if (this.charts[i.questionId]) {  // 並免重覆建立圖表
-          this.charts[i.questionId].destroy();
-        }
-
-        // 自動產色
-        // const backgroundColors = i.options.map((_: string, index: number) => {
-        //   const hue = (index * 360) / i.options.length;
-        //   return `hsl(${hue}, 70%, 60%)`;
-        // });
-        const pastelColors = [
-          '#f4c79a','#9ab8e6','#d5a9cc','#e8a59a','#b3a8e6',
-          '#e8a3b7',
-        ];
-
-        const backgroundColors = i.options.map((_: string, index: number) =>
-          pastelColors[index % pastelColors.length]
-        );
-
-        const datasetData= i.options.map((opt: string) => (Ans as any)[opt] || 0)
-        const data = {
-          labels: i.options.map((opt:string, index:number) => `${opt}：${datasetData[index]}人`),
-          datasets: [
-            {
-              label: '',
-              // map() 是陣列的方法，用來「一個一個」處理每個選項，並回傳一個新陣列
-              // Ans 是一個物件，紀錄每個選項的統計數量
-              // 當opt=選項 => 取出Ans=數量
-              data: datasetData,
-              backgroundColor: backgroundColors,
-              hoverOffset: 4,
-            },
-          ],
-        };
-        const options= {
-          maintainAspectRatio: false,
-          aspectRatio: 1,        // 讓圖表成正方形
-          plugins: {
-            legend: {
-              position: 'left' as const,
-              fullSize: false,   // ⭐ 讓 legend 不占滿整區域（排版更好調）
-              labels: {
-                padding: 60,     // ⭐ 只改 legend 與圖表的左右距離
-                boxWidth: 50,
-                font: {
-                  size: 20,
-                  family:'LXGW WenKai TC',
-                },
-              }
-            }
-          },
-          layout: {
-            padding: 10,        // 整張圖四周留白
+          if (this.charts[i.questionId]) {  // 並免重覆建立圖表
+            this.charts[i.questionId].destroy();
           }
-        }
 
-        this.charts[i.questionId] = new Chart(ctx, {
-          type: 'pie',
-          data,
-          options,
-        });
+          // 自動產色
+          // const backgroundColors = i.options.map((_: string, index: number) => {
+          //   const hue = (index * 360) / i.options.length;
+          //   return `hsl(${hue}, 70%, 60%)`;
+          // });
+          const pastelColors = [
+            '#f1c28a', '#d3837c', '#f3b9b8', '#95b6af', '#4c6083',
+            '#e3ded8', '#c5a68d', '#9aa8b1', '#d8a59e', '#b8a6b3'
+          ];
+
+          const backgroundColors = i.optionsList?.map(
+            (_: any, index: number) =>
+              pastelColors[index % pastelColors.length]
+          ) ?? [];
+
+          const datasetData = i.optionsList.map((opt: any) => {
+            const optionStat = Ans.opCountList.find((o: any) => o.code === opt.code);
+            return optionStat ? optionStat.count : 0;
+          });
+          const data = {
+            labels: i.optionsList.map((opt: any, index: number) => `${opt.optionName}：${datasetData[index]}人`),
+            datasets: [
+              {
+                label: '',
+                data: datasetData,
+                backgroundColor: backgroundColors,
+                borderColor: '#000000',
+                hoverOffset: 4,
+              }
+            ]
+          };
+
+          // const datasetData= i.options.map((opt: string) => (Ans as any)[opt] || 0)
+          // const data = {
+          //   labels: i.options.map((opt:string, index:number) => `${opt}：${datasetData[index]}人`),
+          //   datasets: [
+          //     {
+          //       label: '',
+          //       // map() 是陣列的方法，用來「一個一個」處理每個選項，並回傳一個新陣列
+          //       // Ans 是一個物件，紀錄每個選項的統計數量
+          //       // 當opt=選項 => 取出Ans=數量
+          //       data:datasetData,
+          //       backgroundColor: backgroundColors,
+          //       hoverOffset: 4,
+          //     },
+          //   ],
+          // };
+          const options= {
+            maintainAspectRatio: false,
+            aspectRatio: 1,        // 讓圖表成正方形
+            plugins: {
+              legend: {
+                position: 'left' as const,
+                fullSize: false,   // ⭐ 讓 legend 不占滿整區域（排版更好調）
+                labels: {
+                  padding: 40,     // ⭐ 只改 legend 與圖表的左右距離
+                  boxWidth: 40,
+                  font: {
+                    size: 20,
+                    family:'LXGW WenKai TC',
+                  },
+                }
+              }
+            },
+            layout: {
+              padding: 10,        // 整張圖四周留白
+            }
+          }
+
+          this.charts[i.questionId] = new Chart(ctx, {
+            type: 'pie',
+            data,
+            options,
+          });
+        }
       }
-    }
   }
 
 }

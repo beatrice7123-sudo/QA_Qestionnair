@@ -361,3 +361,12 @@
 .logoutBtn:active {
   transform: scale(0.98);
 }
+
+.alertDialog{
+  width:30%;
+  height:20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+}

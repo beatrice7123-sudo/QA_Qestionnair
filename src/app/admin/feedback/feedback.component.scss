@@ -129,3 +129,13 @@ tr.btn:has(td:nth-child(-n+4):hover ) td:nth-child(-n+4){  // 固定前4格hover
 .scroll-container::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0,0,0,0.5);
 }
+
+.info{
+  margin-left: 50px;
+  width:700px;
+  justify-content: center;
+}
+
+.record{
+  width:350px;
+}

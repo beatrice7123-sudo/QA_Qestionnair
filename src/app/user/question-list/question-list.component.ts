@@ -21,7 +21,7 @@ export class QuestionListComponent {
 
   dataSource:any[]=[];  // 資料列表用
   originalData:any;  // 搜尋用
-  userId!:number;
+  // userId!:number;
 
   currentPage = 1;
   pageSize = 5; // 每頁顯示5筆
@@ -31,7 +31,7 @@ export class QuestionListComponent {
 
   ngOnInit(): void {
 
-    this.userId=Number(this.route.snapshot.paramMap.get('userId'));
+    // this.userId=Number(this.route.snapshot.paramMap.get('userId'));
     this.service.getAllQuestionnaires().subscribe(data=>{
       this.originalData=data;
       for(let Q of this.originalData){  // 判斷是否發布
@@ -250,14 +250,14 @@ export class QuestionListComponent {
   }
 /*--------------------------------------------------------------*/
   goToAns(qId:number){
-    console.log(this.dataSource, this.userId, qId);
+    // console.log(this.dataSource, this.userId, qId);
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['/user/answer-page/',this.userId,qId]);
+      this.router.navigate(['/user/answer-page/',qId]);
     });
   }
   goToCount(qId:number){
     this.router.navigateByUrl('/',{ skipLocationChange: true}).then(() => {
-      this.router.navigate(['/user/counting/',this.userId,qId]);
+      this.router.navigate(['/user/counting/',qId]);
     });
   }
 }

@@ -12,22 +12,37 @@ export class ServiceService {
    }
 
   forCount:any=[];
+  private userInfo:any;
   private previewData:any;
 
-  // ID
-  private userId$ = new BehaviorSubject<number | null>(null);
-  // 設定 userId
-  setUserId(id: number) {
-    this.userId$.next(id);
+  // email
+  private userEmail$ = new BehaviorSubject<string | null>(null);
+  // 設定 userEmail
+  setuserEmail(email:string) {
+    this.userEmail$.next(email);
   }
-  // 取得最新 userId
-  getUserId(): number | null {
-    return this.userId$.value;
+  // 取得最新 userEmail
+  getUserEmail(): string | null {
+    return this.userEmail$.value;
   }
-  // 可訂閱 userId 變化
-  userIdObservable() {
-    return this.userId$.asObservable();
+  // 可訂閱 userEmail 變化
+  userEmailObservable() {
+    return this.userEmail$.asObservable();
   }
+
+
+  // userInfo
+  private userInfo$ = new BehaviorSubject<any>(null);
+  setUserInfo(data: any) {
+    this.userInfo$.next(data); // 使用 .next 廣播新資料
+  }
+  getUserInfo() {
+    return this.userInfo$.value; // 取得當前值
+  }
+  userInfoObservable() {
+    return this.userInfo$.asObservable(); // 讓其他元件可以訂閱
+  }
+
 
   private questionnaireList: QuestionRes[] = [];
   // BehaviorSubject 方便讓其他 component 自動更新畫面
@@ -120,18 +135,9 @@ export class ServiceService {
   }
 
 
-
-  sampleLogins: LoginReq[] = [
-    { email: 'alice@example.com',            password: '1234567' },
-    { email: 'bob.wang@example.com',         password: 'BlueCar#42' },
-    { email: 'chen.ling@example.com',        password: 'Ling2025$Ok' },
-    { email: 'dev.user@example.com',         password: 'Dev_User!2024' },
-    { email: 'test.account@example.com',     password: 'T3st!Acc#' }
-  ];
-
-  sampleUsers: UserInfo[] = [
+  sampleUsers = [
     {
-      id: 1,
+      // id: 1,
       name: 'Alice Chen',
       email: 'alice@example.com',
       phone: '0912-345-678',
@@ -140,7 +146,7 @@ export class ServiceService {
       admin:true,
     },
     {
-      id: 2,
+      // id: 2,
       name: 'Bob Wang',
       email: 'bob.wang@example.com',
       phone: '0923-456-789',
@@ -149,7 +155,7 @@ export class ServiceService {
       admin:false,
     },
     {
-      id: 3,
+      // id: 3,
       name: 'Charlie Liu',
       email: 'charlie.liu@example.com',
       phone: '0934-567-890',
@@ -158,7 +164,7 @@ export class ServiceService {
       admin:false,
     },
     {
-      id: 4,
+      // id: 4,
       name: 'Diana Ho',
       email: 'diana.ho@example.com',
       phone: '0945-678-901',
@@ -167,7 +173,7 @@ export class ServiceService {
       admin:false,
     },
     {
-      id: 5,
+      // id: 5,
       name: 'Evan Tsai',
       email: 'evan.tsai@example.com',
       phone: '0956-789-012',
@@ -347,12 +353,13 @@ export interface LoginReq // (登入請求)
     password: string, //密碼
 }
 export interface UserInfo {
-  id: number;           // 使用者 ID
+  // id: number;           // 使用者 ID
   name: string;         // 使用者姓名
+  password:string;
   email: string;        // 使用者 Email
   phone?: string;       // 電話號碼（可選）
   birthDate?: string;   // 生日（可選，格式 YYYY-MM-DD）
-  gender?: 'male' | 'female' | 'other'; // 性別（可選）
+  gender?: string; // 性別（可選）
   admin:boolean;
 }
 
